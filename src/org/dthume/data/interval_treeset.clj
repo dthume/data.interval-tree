@@ -59,6 +59,8 @@ the interval which they occupy."}
   (ft/split-tree tree #(>= 0 (compare-point k (ival-start %)))))
 
 (defprotocol IPersistentIntervalSet
+  (union [this other]
+    "Merge `this` set with `other`.")
   (first-overlapping [this ival] [this ival n-f]
     "Search `this` for the first value which overlaps `ival`, returning `nil`
 if none is found in the two arg case, or `n-f` in the three arg case.")
@@ -233,6 +235,52 @@ resulting selection."))
     (toArray [_] nil)
     (toArray [_ a] nil)
   IPersistentIntervalSet
+    (^Object union [^IntervalTreeSet this ^Object other]
+      (if-not (instance? IntervalTreeSet other)
+        (into this other)
+        (let [^IntervalTreeSet iother other]
+          (loop [res (empty (.tree this)) as tree bs (.tree iother)]
+            (cond
+             (empty? as)
+             (cond
+              (empty? res) (with-tree this bs)
+              (empty? bs)  (with-tree this res)
+              :else
+              (let [rf                     (peek res)
+                    [rfs rfe]              (as-interval rf)
+                    =rfs                   #(not= rfs (ival-start %))
+                    [bl x br]              (ft/split-tree bs =rfs)
+                    ^IntervalTreeSet new-t (-> (with-tree this res)
+                                               (into bl)
+                                               (conj x))
+                    new-t                  (-> new-t .tree (ft/ft-concat br))]
+                (with-tree this new-t)))
+
+             (empty? bs)
+             (cond
+              (empty? res) (with-tree this as)
+              (empty? as)  (with-tree this res)
+              :else        (with-tree this (ft/ft-concat res as)))
+             
+             :else
+             (let [[bf & br] bs
+                   [bfs bfe] (as-interval bf)
+                   [l x r]   (split-tree-key compare-point as bfs)
+                   [xs xe]   (as-interval x)
+                   [l r]    (if (pos? (compare-point bfs xs))
+                              (tuple (conj l x) r)
+                              (tuple l (ft/conjl r x)))
+                   existing? (loop [ls l]
+                               (when-let [ll (peek ls)]
+                                 (when (->> ll as-interval first
+                                            (compare-point bfs) zero?)
+                                   (if (= bf ll)
+                                     true
+                                     (recur (pop ls))))))
+                   new-res (ft/ft-concat res l)]
+               (if existing?
+                 (recur new-res br r)
+                 (recur (conj new-res bf) br r))))))))
     (first-overlapping [this ival]
       (first-overlapping this ival nil))
     (first-overlapping [this ival n-f]
@@ -285,6 +333,29 @@ resulting selection."))
                     tree
                     (.mdata base)))
 
+(defn- combine-interval-meters
+  [compare-point]
+  (fn [^IntervalMeasure l ^IntervalMeasure r]
+    (let [le (ival-end l) re (ival-end r)]
+      (interval-measure
+       (+ (.length l) (.length r))
+       (interval (or (ival-start r) (ival-start l))
+                 (cond
+                  (nil? le)                     re
+                  (nil? re)                     le
+                  (pos? (compare-point le re))  le
+                  :else                         re))))))
+
+(defrecord ^:private IntervalMeter [as-interval idElem compare-point]
+  ft/ObjMeter
+  (measure [_ a] (interval-measure 1 (as-interval a)))
+  (idElem [_] idElem)
+  (opfn [_] (combine-interval-meters compare-point)))
+
+(defn- interval-meter
+  [compare-point as-interval idElem]
+  (->IntervalMeter as-interval idElem compare-point))
+
 (defn interval-treeset
   "Create an empty interval tree set. Available options:
 
@@ -313,9 +384,7 @@ resulting selection."))
                               (nil? re)                     le
                               (pos? (compare-point le re))  le
                               :else                         re)))))
-              as-measure (fn [x] (interval-measure 1 (as-interval x)))
-              interval-meter (ft/meter as-measure
-                                       (interval-measure 0 zero-interval)
-                                       combine-intervals)
+              interval-meter (interval-meter compare-point as-interval
+                                             (interval-measure 0 zero-interval))
               empty-tree (ft/->EmptyTree interval-meter)]
     (IntervalTreeSet. as-interval compare-point empty-tree nil)))

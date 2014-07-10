@@ -13,9 +13,11 @@ Largely based on the implementation described in the
 [org.dthume/data.interval-treeset "0.1.0-SNAPSHOT"]
 ```
 
-## API
+## API Docs
 
-Codox docs can be found [here](http://dthume.github.io/data.interval-tree/).
+[codox](https://github.com/weavejester/codox)
+generated documentation can be found
+[here](http://dthume.github.io/data.interval-tree/).
 
 ## Basic Usage
 
