@@ -5,6 +5,8 @@ Interval Treeset built on [data.finger-tree](https://github.com/clojure/data.fin
 Largely based on the implementation described in the
 [original paper](http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf).
 
+[![Build Status](https://travis-ci.org/dthume/data.interval-tree.svg?branch=master)](https://travis-ci.org/dthume/data.interval-tree)
+
 ## Leiningen
 
 ```clojure
