@@ -1,9 +1,10 @@
 (ns ^{:doc "Finger tree based interval treeset implementation.
 
-Based largely on the original paper:
-http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+Based largely on the original
+[paper](http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf)
 
-"}
+Provides an efficient, persistent representation of a set of items sorted by
+the interval which they occupy."}
   org.dthume.data.interval-treeset
   (:require [clj-tuple :refer (tuple)]
             (clojure.core [protocols :as core-protocols]
