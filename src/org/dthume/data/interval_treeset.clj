@@ -370,6 +370,9 @@ resulting selection."))
   (idElem [_] idElem)
   (opfn [_] (combine-interval-meters compare-point)))
 
+(alter-meta! #'->IntervalMeter assoc :no-doc true)
+(alter-meta! #'map->IntervalMeter assoc :no-doc true)
+
 (defn- interval-meter
   [compare-point as-interval idElem]
   (->IntervalMeter as-interval idElem compare-point))
