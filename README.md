@@ -93,6 +93,51 @@ is represented as a vector or tuple :
 [prefix selected suffix]
 ```
 
+Initial selections can be obtained using `select-overlapping` on a tree:
+
+```clojure
+(-> ts
+    (it/select-overlapping [0 4]))
+;; => [() ([0 2] [3 5]) ([6 8])]
+
+(-> ts
+    (it/select-overlapping [0 4])
+    (it/selected)
+;; => ([0 2] [3 5])
+
+(-> ts
+    (it/select-overlapping [0 4])
+    (it/suffix)
+;; => ([6 8])
+```
+
+The selected region can be expanded or contracted:
+
+```clojure
+(-> ts
+    (it/select-overlapping [3 4])
+    (it/selected))
+;; => ([3 5])
+
+(-> ts
+    (it/select-overlapping [3 4])
+    (it/expandl 1)
+    (it/selected))
+;; => ([0 2] [3 5])
+
+(-> ts
+    (it/select-overlapping [3 4])
+    (it/expandr 1)
+    (it/selected))
+;; => ([3 5] [6 8])
+
+(-> ts
+    (it/select-overlapping [3 4])
+    (it/expandr 1)
+    (it/contractl 1)
+    (it/selected))
+;; => ([6 8])
+```
 
 ## License
 

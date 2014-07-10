@@ -13,6 +13,11 @@
                     tree
                     (.mdata base)))
 
+(defn selection
+  "Create a selection from 3 trees: `pre`fix `sel`ected and `suff`ix."
+  [pre sel suff]
+  (tuple pre sel suff))
+
 (defn selected
   "Return only the selected part of this region in the one arg case, set
 the selected part in the two arg case."
