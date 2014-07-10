@@ -13,6 +13,8 @@ Largely based on the implementation described in the
 
 ## Basic Usage
 
+For a full set of examples, see the tests.
+
 ```clojure
 ;; just for this documentation
 (require '[org.dthume.data.interval-treeset :as it])
@@ -80,6 +82,17 @@ Adding an existing item is a noop:
 ```clojure
 (require '[org.dthume.data.interval-treeset.selection :as sel)
 ```
+
+Selections allow a set to divided up into three consecutive subsets:
+the `prefix`, the `selected`, and the `suffix`. The `selected` region
+can be expanded or contracted using a variety of methods, as well as
+being moved left or right (providing windowing functionality). A selection
+is represented as a vector or tuple :
+
+```clojure
+[prefix selected suffix]
+```
+
 
 ## License
 
