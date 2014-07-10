@@ -54,7 +54,7 @@ provide an interval lensing function:
 
 ```clojure
 (def ts (into (it/interval-treeset :as-interval :span)
-        [{:span [6 8] :id 3} {:span [3 5] :id 2} {:span [0 2] :id 1}]))
+              [{:span [6 8] :id 3} {:span [3 5] :id 2} {:span [0 2] :id 1}]))
 ;; => ({:span [0 2] :id 1} {:span [3 5] :id 2} {:span [6 8] :id 3})
 ```
 

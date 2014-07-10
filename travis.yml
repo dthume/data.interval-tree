@@ -1,0 +1,3 @@
+language: clojure
+script: lein do clean, midje
+lein: lein2
