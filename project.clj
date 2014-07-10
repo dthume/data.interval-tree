@@ -5,8 +5,7 @@
             [lein-midje "3.0.0"]
             [perforate "0.3.3"]]
 
-  :codox {:output-dir "target/codox"
-          :defaults {:doc/format :markdown}}
+  :codox {:defaults {:doc/format :markdown}}
 
   :dependencies [[clj-tuple "0.1.5"]
                  [org.clojure/clojure "1.6.0"]

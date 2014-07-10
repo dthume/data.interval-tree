@@ -156,6 +156,7 @@ ClientBin/
 .nrepl-port
 target/
 pom.xml
+doc/
 
 # RIA/Silverlight projects
 Generated_Code/
