@@ -113,12 +113,12 @@ Initial selections can be obtained using `select-overlapping` on a tree:
 
 (-> ts
     (it/select-overlapping [0 4])
-    (it/selected)
+    (sel/selected)
 ;; => ([0 2] [3 5])
 
 (-> ts
     (it/select-overlapping [0 4])
-    (it/suffix)
+    (sel/suffix)
 ;; => ([6 8])
 ```
 
@@ -127,26 +127,26 @@ The selected region can be expanded or contracted:
 ```clojure
 (-> ts
     (it/select-overlapping [3 4])
-    (it/selected))
+    (sel/selected))
 ;; => ([3 5])
 
 (-> ts
     (it/select-overlapping [3 4])
-    (it/expandl 1)
-    (it/selected))
+    (sel/expandl 1)
+    (sel/selected))
 ;; => ([0 2] [3 5])
 
 (-> ts
     (it/select-overlapping [3 4])
-    (it/expandr 1)
-    (it/selected))
+    (sel/expandr 1)
+    (sel/selected))
 ;; => ([3 5] [6 8])
 
 (-> ts
     (it/select-overlapping [3 4])
-    (it/expandr 1)
-    (it/contractl 1)
-    (it/selected))
+    (sel/expandr 1)
+    (sel/contractl 1)
+    (sel/selected))
 ;; => ([6 8])
 ```
 
