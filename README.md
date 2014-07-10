@@ -15,7 +15,7 @@ Largely based on the implementation described in the
 
 ```clojure
 ;; just for this documentation
-(require '[org.dthume.data.finger-tree :as ft])
+(require '[org.dthume.data.interval-treeset :as it])
 ```
 
 Interval Treesets sort their entries by _interval_. Intervals are simply pairs
@@ -29,7 +29,7 @@ However you may find it convienient to use the `interval` function which
 produces an optimised (but still compatible) interval:
 
 ```clojure
-(ft/interval 5 10)
+(it/interval 5 10)
 ;; => [5 10]
 ```
 
@@ -43,7 +43,7 @@ takes items to populate the initial treeset with such as
 and then filled using `into`:
 
 ```clojure
-(def ts (into (ft/interval-treeset) [[0 2] [3 5] [6 8]]))
+(def ts (into (it/interval-treeset) [[0 2] [3 5] [6 8]]))
 ;; => ([0 2] [3 5] [6 8])
 ```
 
@@ -78,7 +78,7 @@ Adding an existing item is a noop:
 ## Selections
 
 ```clojure
-(require '[org.dthume.data.finger-tree.selection :as sel)
+(require '[org.dthume.data.interval-treeset.selection :as sel)
 ```
 
 ## License
