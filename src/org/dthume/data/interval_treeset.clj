@@ -9,7 +9,8 @@ the interval which they occupy."}
   (:require [clj-tuple :refer (tuple)]
             (clojure.core [protocols :as core-protocols]
                           [reducers :as r])
-            [clojure.data.finger-tree :as ft])
+            [clojure.data.finger-tree :as ft]
+            [clojure.set])
   (:import (clojure.lang Seqable Sequential ISeq IPersistentSet ILookup
                          IPersistentStack IPersistentCollection Associative
                          Sorted Reversible Indexed Counted IHashEq)))
