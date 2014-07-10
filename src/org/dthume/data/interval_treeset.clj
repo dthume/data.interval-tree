@@ -59,7 +59,7 @@ the interval which they occupy."}
   (ft/split-tree tree #(>= 0 (compare-point k (ival-start %)))))
 
 (defprotocol IPersistentIntervalSet
-  (union [this other]
+  (union* [this other]
     "Merge `this` set with `other`.")
   (first-overlapping [this ival] [this ival n-f]
     "Search `this` for the first value which overlaps `ival`, returning `nil`
@@ -235,7 +235,7 @@ resulting selection."))
     (toArray [_] nil)
     (toArray [_ a] nil)
   IPersistentIntervalSet
-    (^Object union [^IntervalTreeSet this ^Object other]
+    (^Object union* [^IntervalTreeSet this ^Object other]
       (if-not (instance? IntervalTreeSet other)
         (into this other)
         (let [^IntervalTreeSet iother other]
@@ -260,7 +260,16 @@ resulting selection."))
              (cond
               (empty? res) (with-tree this as)
               (empty? as)  (with-tree this res)
-              :else        (with-tree this (ft/ft-concat res as)))
+              :else
+              (let [rf                     (first res)
+                    [rfs rfe]              (as-interval rf)
+                    =rfs                   #(not= rfs (ival-start %))
+                    [bl x br]              (ft/split-tree as =rfs)
+                    ^IntervalTreeSet new-t (-> (with-tree this res)
+                                               (into bl)
+                                               (conj x))
+                    new-t                  (-> new-t .tree (ft/ft-concat br))]
+                (with-tree this new-t)))
              
              :else
              (let [[bf & br] bs
@@ -277,6 +286,14 @@ resulting selection."))
                                    (if (= bf ll)
                                      true
                                      (recur (pop ls))))))
+                   existing? (if existing? existing?
+                                 (loop [ls res]
+                                   (when-let [ll (peek ls)]
+                                     (when (->> ll as-interval first
+                                                (compare-point bfs) zero?)
+                                       (if (= bf ll)
+                                         true
+                                         (recur (pop ls)))))))
                    new-res (ft/ft-concat res l)]
                (if existing?
                  (recur new-res br r)
@@ -388,3 +405,30 @@ resulting selection."))
                                              (interval-measure 0 zero-interval))
               empty-tree (ft/->EmptyTree interval-meter)]
     (IntervalTreeSet. as-interval compare-point empty-tree nil)))
+
+(defn union
+  "Return a set that is the union of the input sets"
+  ([s1]
+     s1)
+  ([s1 s2]
+     (union* s1 s2))
+  ([s1 s2 & sets]
+     (reduce union* (union* s1 s2) sets)))
+
+(defn intersection
+  "Return a set that is the intersection of the input sets"
+  ([s1]
+     s1)
+  ([s1 s2]
+     (clojure.set/intersection s1 s2))
+  ([s1 s2 & sets]
+     (apply clojure.set/intersection s1 s2 sets)))
+
+(defn difference
+  "Return a set that is the first set without elements of the remaining sets"
+  ([s1]
+     s1)
+  ([s1 s2]
+     (clojure.set/difference s1 s2))
+  ([s1 s2 & sets]
+     (apply clojure.set/difference s1 s2 sets)))

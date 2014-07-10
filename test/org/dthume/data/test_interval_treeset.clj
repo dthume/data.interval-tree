@@ -18,6 +18,8 @@
 
 (def ts4 (into (it/interval-treeset) [[1 3] [15 20] [22 25]]))
 
+(def ts5 (into (it/interval-treeset) [[1 3] [30 35]]))
+
 (fact "Interval trees support basic seq operations"
   (count ts1)                           => 6 
 
@@ -48,8 +50,8 @@
 
   (disj ts1 [11 21])                    => [[0 5] [6 10] [11 15] [16 21] [22 25]]
 
-  (count (disj ts2 {:span [11 15]
-                    :key :c}))          => 5)
+  (count (disj ts2 {:span [11 15] :key :c}))
+                                        => 5)
 
 (fact "Interval trees support efficient merging"
   (it/union ts1 ts3)                    => [[0 5] [6 10] [11 15] [11 21] [16 21]
@@ -62,7 +64,17 @@
                                             [11 21] [15 20] [16 21] [22 25]]
 
   (it/union ts1 ts4)                    => [[0 5] [1 3] [6 10] [11 15]
-                                            [11 21] [15 20] [16 21] [22 25]])
+                                            [11 21] [15 20] [16 21] [22 25]]
+
+  (it/union ts3 ts5)                    => [[1 3] [30 35] [36 40] [41 45]]
+
+  (it/union ts5 ts3)                    => [[1 3] [30 35] [36 40] [41 45]])
+
+(fact "Interval trees support intersections"
+  (it/intersection ts5 ts3)             => [[30 35]])
+
+(fact "Interval trees support differences"
+  (it/difference ts5 ts3)               => [[1 3]])
 
 (fact "Interval trees support selection of overlapping subregions"
   (sel/overlapping-subset ts1 [11 20])  => [[11 15] [11 21] [16 21]]
