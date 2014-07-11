@@ -100,7 +100,10 @@ Adding an existing item is a noop:
 (require '[org.dthume.data.interval-treeset.selection :as sel)
 ```
 
-Selections allow a set to divided up into three consecutive subsets:
+You should probably _not_ attempt to `use` or `(require ... :refer :all)` the
+selection namespace, since it contains vars which shadow `clojure.core`.
+
+Selections allow a set to be divided up into three consecutive subsets:
 the `prefix`, the `selected`, and the `suffix`. The `selected` region
 can be expanded or contracted using a variety of methods, as well as
 being moved left or right (providing windowing functionality). A selection
@@ -154,6 +157,15 @@ The selected region can be expanded or contracted:
     (sel/contractl 1)
     (sel/selected))
 ;; => ([6 8])
+```
+
+The selection can be recombined into an interval tree:
+
+```clojure
+(-> ts
+    (it/select-overlapping [3 4])
+    (sel/unselect))
+;; => ([0 2] [3 5] [6 8])
 ```
 
 ## TODO

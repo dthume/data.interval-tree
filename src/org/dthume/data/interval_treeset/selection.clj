@@ -38,10 +38,33 @@ the suffix part in the two arg case."
   ([t v] (assoc t 2 v)))
 
 (defn edit
+  "Edit a component part of `t` using `lens` (one of `[[prefix]]`,
+`[[selected]]` or `[[suffix]]`).
+`f` will be called with the value of the component part as the
+first argument, followed by any remaining `args`. The result will be converted
+to an interval treeset as described below, which will be used as the new value
+of the component part, and an updated selection region will be returned.
+
+The result of `f` can be either `nil`, an interval treeset, or any sequential
+type:
+
+* `nil` will result in an empty interval treeset as the component part value.
+* An interval treeset will be used as is as the component part value.
+* Any other sequential type will be poured into an empty interval treeset
+  (created from the original) which will be used as the component part value."
   [t lens f & args]
-  (lens t (apply f (lens t) args)))
+  (let [old (lens t)
+        fd (apply f old args)]
+    (clojure.core/->>
+     (cond
+      (nil? fd)                            (empty old)
+      (not (instance? IntervalTreeSet fd)) (into (empty old) fd)
+      :else                                fd)
+     (lens t))))
 
 (defn transform
+  "Like `[[edit]]`, but passes the component value as the _last_ argument to
+`f` rather than the first."
   [t lens f & args]
   (let [old (lens t)
         fd  (clojure.core/->> [old] (concat args) (apply f))]
@@ -52,17 +75,38 @@ the suffix part in the two arg case."
       :else                                fd)
      (lens t))))
 
-(defmacro ->>
-  [t l & body]
-  `(transform ~t ~l (fn [x#] (clojure.core/->> x# ~@body))))
-
 (defmacro ->
-  [t l & body]
-  `(transform ~t ~l (fn [x#] (clojure.core/-> x# ~@body))))
+  "Analogue of `clojure.core/->` for use with selections.
+
+Takes a selected region `t`, a `lens` (one of `[[prefix]]`, `[[selected]]` or
+`[[suffix]]`) and a body of expressions, and threads the component part value
+identified by `lens` through `body` with `clojure.core/->`. The result is
+convered to an interval treeset as per `[[edit]]`, and used as the new
+component part value."
+  [t lens & body]
+  `(transform ~t ~lens (fn [x#] (clojure.core/-> x# ~@body))))
+
+(defmacro ->>
+  "Analogue of `clojure.core/->>` for use with selections.
+
+Takes a selected region `t`, a `lens` (one of `[[prefix]]`, `[[selected]]` or
+`[[suffix]]`) and a body of expressions, and threads the component part value
+identified by `lens` through `body` with `clojure.core/->>`. The result is
+convered to an interval treeset as per `[[edit]]`, and used as the new
+component part value."
+  [t lens & body]
+  `(transform ~t ~lens (fn [x#] (clojure.core/->> x# ~@body))))
 
 (defmacro as->
-  [t l n & body]
-  `(transform ~t ~l (fn [x#] (clojure.core/as-> x# ~n ~@body))))
+  "Analogue of `clojure.core/as->` for use with selections.
+
+Takes a selected region `t`, a `lens` (one of `[[prefix]]`, `[[selected]]` or
+`[[suffix]]`) and a body of expressions, and threads the component part value
+identified by `lens` through `body` with `clojure.core/as->`. The result is
+convered to an interval treeset as per `[[edit]]`, and used as the new
+component part value."
+  [t lens n & body]
+  `(transform ~t ~lens (fn [x#] (clojure.core/as-> x# ~n ~@body))))
 
 (defn contractl-by
   "Contract the covered region to the left until `pred` has returned logical
