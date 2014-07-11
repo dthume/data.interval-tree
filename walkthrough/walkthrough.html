@@ -3109,7 +3109,7 @@ intervals, as show by the example with a custom interval lens.</p>
 <a href="http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf">original paper</a>,
 although I confess that the differences between the Haskell in the paper
 and the clojure finger tree implementation mean I'm not altogether confident
-that it's completely correct (although the tests seem favourable thus far).</p>
+that it's completely correct (that said the tests seem favourable thus far).</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support efficient merging&quot;
   (it/union (ts [1 2] [3 4])
             (ts [5 6] [7 8]))           =&gt; [[1 2] [3 4] [5 6] [7 8]]
@@ -3130,11 +3130,13 @@ that it's completely correct (although the tests seem favourable thus far).</p>
             (ts [1 2] [7 10] [7 8]))    =&gt; [[1 2] [7 8] [7 10]]
 
   (it/union (ts [0 2] [1 2] [7 8])
-            (ts [1 2] [7 10] [7 8]))    =&gt; [[0 2] [1 2] [7 8] [7 10]])</pre></td></tr><tr><td class="docs"><p><code>intersection</code> is currently using a naive implementation (the default
+            (ts [1 2] [7 10] [7 8]))    =&gt; [[0 2] [1 2] [7 8] [7 10]])</pre></td></tr><tr><td class="docs"><p><a href="../codox/org.dthume.data.interval-treeset.html#var-intersection">intersection</a>,
+is currently using a naive implementation (the default
 from <code>clojure.set</code>).</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support intersections&quot;
   (it/intersection (ts [1 2] [3 4])
-                   (ts [3 4] [5 6]))    =&gt; [[3 4]])</pre></td></tr><tr><td class="docs"><p><code>difference</code> is also currently using a naive implementation (the default
+                   (ts [3 4] [5 6]))    =&gt; [[3 4]])</pre></td></tr><tr><td class="docs"><p><a href="../codox/org.dthume.data.interval-treeset.html#var-difference">difference</a>,
+is also currently using a naive implementation (the default
 from <code>clojure.set</code>).</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support differences&quot;
   (it/difference (ts [1 2] [3 4])
@@ -3159,8 +3161,8 @@ set around a particular subset of consecutive items.
 Selection regions are indexed sequences of 3 items:
 <code>[prefix selected suffix]</code>, which is useful in its own right, but
 see below for examples of using the
-<code>org.dthume.data.interval-tree.selection</code> namespace to work with selection
-regions.</p>
+<a href="../codox/org.dthume.data.interval-treeset.selection.html">org.dthume.data.interval-tree.selection</a>
+namespace to work with selection regions.</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Treesets can be partitioned around selection regions&quot;
   (it/select-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
@@ -3168,7 +3170,17 @@ regions.</p>
                                             [[3 4] [5 6]]
                                             [[7 8]]])</pre></td></tr><tr><td class="docs"><p>Each component of a selection region acts as a window, and can be operated
 on individually, but the <code>selected</code> component acts as the "primary"
-component, and can be expanded or contracted to the left and right sides.</p>
+component, and can be expanded or contracted to the left and right sides
+using a variety of functions. by convention, functions which manipulate the
+left side of the selected region are suffixed with "l", e.g.
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandl">expandl</a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractl">contractl</a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractl-while">contractl-while</a>,
+while those which manipulate the right
+side are suffixed with "r", e.g.
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandr">expandr</a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr">contractr</a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-by">contractr-by</a>.</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;The selected subset can be expanded or contracted on either side&quot;
   (-&gt; (ts [1 2] [3 4] [5 6] [7 8])
       (it/select [3 4])
@@ -3205,16 +3217,28 @@ component, and can be expanded or contracted to the left and right sides.</p>
       (sel/expandr-while #(not= :d (:key %)))
       (sel/selected))                   =&gt; [{:span [6 10] :key :b}
                                             {:span [11 15] :key :c}])</pre></td></tr><tr><td class="docs"><p>Components of a selection region can be individually transformed using
-the <code>edit</code> and <code>transform</code> functions which are similar to
-<code>clojure.core/-&gt;</code> and <code>clojure.core/-&gt;&gt;</code> except for functions:
+the
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-edit">edit</a>
+and
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-transform">transform</a>
+functions which are similar to
+<a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/-%3E">clojure.core/-></a>
+and
+<a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/-%3E%3E">clojure.core/->></a>
+except that they operate on functions:
 <code>edit</code> passes the current value of a component as the <em>first</em> argument to
 the supplied function, while <code>transform</code> passes the current value as the
 <em>last</em> argument.</p>
 
 <p>Both <code>edit</code> and <code>transform</code> use <em>lenses</em> to select a particular component
 part to work with; in this case there are three lenses:
-<code>prefix</code>, <code>selected</code> and <code>suffix</code>, all in the
-<code>org.dthume.interval-tree.selection</code> namespace.</p>
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-prefix">prefix</a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-selected">selected</a>
+and
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-suffix">suffix</a>,
+all in the
+<a href="../codox/org.dthume.data.interval-treeset.selection.html">org.dthume.data.interval-tree.selection</a>
+namespace.</p>
 
 <p>Both <code>edit</code> and <code>transform</code> coerce the result of the supplied function to an
 interval treeset; for more details see the codox docs.</p>
@@ -3247,7 +3271,11 @@ interval treeset; for more details see the codox docs.</p>
       (it/select-overlapping [3 6])
       (sel/edit sel/suffix empty)
       (sel/unselect))                   =&gt; [[1 2] [3 4] [5 6]])</pre></td></tr><tr><td class="docs"><p>For even more inline goodness, there are three threading operators provided,
-<code>-&gt;</code>, <code>-&gt;&gt;</code> and <code>as-&gt;</code>, which mirror those in <code>clojure.core</code> except that they
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var--.3E">-></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var--.3E.3E">->></a>
+and
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-as-.3E">as-></a>,
+which mirror those in <code>clojure.core</code> except that they
 take <em>two</em> leading arguments: a selection region and a lensing function.</p>
 
 <p>One downside of these functions is that they prevent you from just <code>refer</code>ing
