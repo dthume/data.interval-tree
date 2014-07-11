@@ -3032,14 +3032,12 @@ net.brehaut.ClojureTools = (function (SH) {
 </div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">clj-tuple</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/data.finger-tree</td><td class="dotted"><hr /></td><td class="dep-version">0.0.2</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#org.dthume.data.test-interval-treeset">org.dthume.data.test-interval-treeset</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#org.dthume.data.test-interval-treeset" name="org.dthume.data.test-interval-treeset"><h1 class="project-name">org.dthume.data.test-interval-treeset</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns org.dthume.data.test-interval-treeset
   (:require [midje.sweet :refer :all]
-            [clj-tuple :refer (tuple)]
-            [clojure.data.finger-tree :as ft]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.interval-treeset.selection :as sel]))</pre></td></tr><tr><td class="docs"><p>A basic transformation function for use in update tests</p>
 </td><td class="codes"><pre class="brush: clojure">(defn- shiftt
   [op x]
   (fn [[s e]]
-    (tuple (op s x) (op e x))))</pre></td></tr><tr><td class="docs"><p>Utility fn for creating treesets succinctly</p>
+    (it/interval (op s x) (op e x))))</pre></td></tr><tr><td class="docs"><p>Utility fn for creating treesets succinctly</p>
 </td><td class="codes"><pre class="brush: clojure">(let [empty-set (it/interval-treeset)]
   (defn ts [&amp; items] (into empty-set items)))</pre></td></tr><tr><td class="docs"><p>Another for treesets using a custom interval lens
 When we want to store something other than raw intervals, we can supply a
