@@ -17,7 +17,12 @@ Largely based on the implementation described in the
 
 [codox](https://github.com/weavejester/codox)
 generated documentation can be found
-[here](http://dthume.github.io/data.interval-tree/).
+[here](http://dthume.github.io/data.interval-tree/codox/index.html).
+
+[marginalia](https://github.com/gdeer81/marginalia)
+generated documentation can be found
+[here](http://dthume.github.io/data.interval-tree/tests/uberdoc.html).
+
 
 ## Basic Usage
 
@@ -69,7 +74,7 @@ provide an interval lensing function:
 Items will be added at the correct position:
 
 ```clojure
-(conj ts [1 4]) ;; Amortized O(1)
+(conj ts [1 4]) ;; Amortized O(log(n))
 ;; => ([0 2] [1 4] [3 5] [6 8])
 ```
 

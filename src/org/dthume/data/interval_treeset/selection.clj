@@ -1,4 +1,4 @@
-(ns ^{:doc "Interval treeset subset selection"}
+(ns ^{:doc "Interval treeset subset selection."}
   org.dthume.data.interval-treeset.selection
   (:refer-clojure :exclude [-> ->> as->])
   (:require [clj-tuple :refer (tuple)]
@@ -20,26 +20,29 @@
   (tuple pre sel suff))
 
 (defn selected
-  "Return only the selected part of this region in the one arg case, set
+  "Lensing function for the selected component part of a region.
+Return only the selected part of this region in the one arg case, set
 the selected part in the two arg case."
   (^IntervalTreeSet [t] (nth t 1))
   ([t v] (assoc t 1 v)))
 
 (defn prefix
-  "Return only the prefix part of this region in the one arg case, set
+  "Lensing function for the prefix component part of a region.
+Return only the prefix part of this region in the one arg case, set
 the prefix part in the two arg case."
   (^IntervalTreeSet [t] (nth t 0))
   ([t v] (assoc t 0 v)))
 
 (defn suffix
-  "Return only the suffix part of this region in the one arg case, set
+  "Lensing function for the suffix component part of a region.
+Return only the suffix part of this region in the one arg case, set
 the suffix part in the two arg case."
   (^IntervalTreeSet [t] (nth t 2))
   ([t v] (assoc t 2 v)))
 
 (defn edit
-  "Edit a component part of `t` using `lens` (one of `[[prefix]]`,
-`[[selected]]` or `[[suffix]]`).
+  "Edit a component part of `t` using `lens` (one of [[prefix]],
+[[selected]] or [[suffix]]).
 `f` will be called with the value of the component part as the
 first argument, followed by any remaining `args`. The result will be converted
 to an interval treeset as described below, which will be used as the new value
@@ -63,7 +66,7 @@ type:
      (lens t))))
 
 (defn transform
-  "Like `[[edit]]`, but passes the component value as the _last_ argument to
+  "Like [[edit]], but passes the component value as the _last_ argument to
 `f` rather than the first."
   [t lens f & args]
   (let [old (lens t)
@@ -78,10 +81,10 @@ type:
 (defmacro ->
   "Analogue of `clojure.core/->` for use with selections.
 
-Takes a selected region `t`, a `lens` (one of `[[prefix]]`, `[[selected]]` or
-`[[suffix]]`) and a body of expressions, and threads the component part value
+Takes a selected region `t`, a `lens` (one of [[prefix]], [[selected]] or
+[[suffix]]) and a body of expressions, and threads the component part value
 identified by `lens` through `body` with `clojure.core/->`. The result is
-convered to an interval treeset as per `[[edit]]`, and used as the new
+convered to an interval treeset as per [[edit]], and used as the new
 component part value."
   [t lens & body]
   `(transform ~t ~lens (fn [x#] (clojure.core/-> x# ~@body))))
@@ -89,10 +92,10 @@ component part value."
 (defmacro ->>
   "Analogue of `clojure.core/->>` for use with selections.
 
-Takes a selected region `t`, a `lens` (one of `[[prefix]]`, `[[selected]]` or
-`[[suffix]]`) and a body of expressions, and threads the component part value
+Takes a selected region `t`, a `lens` (one of [[prefix]], [[selected]] or
+[[suffix]]) and a body of expressions, and threads the component part value
 identified by `lens` through `body` with `clojure.core/->>`. The result is
-convered to an interval treeset as per `[[edit]]`, and used as the new
+convered to an interval treeset as per [[edit]], and used as the new
 component part value."
   [t lens & body]
   `(transform ~t ~lens (fn [x#] (clojure.core/->> x# ~@body))))
@@ -100,10 +103,10 @@ component part value."
 (defmacro as->
   "Analogue of `clojure.core/as->` for use with selections.
 
-Takes a selected region `t`, a `lens` (one of `[[prefix]]`, `[[selected]]` or
-`[[suffix]]`) and a body of expressions, and threads the component part value
+Takes a selected region `t`, a `lens` (one of [[prefix]], [[selected]] or
+[[suffix]]) and a body of expressions, and threads the component part value
 identified by `lens` through `body` with `clojure.core/as->`. The result is
-convered to an interval treeset as per `[[edit]]`, and used as the new
+convered to an interval treeset as per [[edit]], and used as the new
 component part value."
   [t lens n & body]
   `(transform ~t ~lens (fn [x#] (clojure.core/as-> x# ~n ~@body))))
@@ -285,21 +288,6 @@ component part value."
   "Slide the covered region right by `n` items"
   [t n]
   (slide-right-by (constantly true) n))
-
-(defn disj-selected
-  "Return an interval treeset with only `prefix` and `suffix`."
-  [t]
-  (it/union (prefix t) (suffix t)))
-
-(defn disj-prefix
-  "Return an interval treeset with only `region` and `suffix`."
-  [t]
-  (it/union (selected t) (suffix t)))
-
-(defn disj-suffix
-  "Return an interval treeset with only `prefix` and `region`."
-  [t]
-  (it/union (prefix t) (selected t)))
 
 (defn unselect
   "Combine `prefix`, `region` and `suffix` back together to form an interval
