@@ -156,6 +156,11 @@ The selected region can be expanded or contracted:
 ;; => ([6 8])
 ```
 
+## TODO
+
+- Implement more efficient intersection/difference as with union.
+- Customize print-method to print as set rather than seq?
+
 ## License
 
 Copyright (C) 2014 David Thomas Hume.

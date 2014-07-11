@@ -1,5 +1,6 @@
 (ns ^{:doc "Interval treeset subset selection"}
   org.dthume.data.interval-treeset.selection
+  (:refer-clojure :exclude [-> ->> as->])
   (:require [clj-tuple :refer (tuple)]
             [clojure.core.reducers :as r]
             [clojure.data.finger-tree :as ft]
@@ -37,22 +38,31 @@ the suffix part in the two arg case."
   ([t v] (assoc t 2 v)))
 
 (defn edit
-  [lens t f & args]
+  [t lens f & args]
   (lens t (apply f (lens t) args)))
 
-(defn each
-  [lens t f & args]
+(defn transform
+  [t lens f & args]
   (let [old (lens t)
-        updated (into (empty old) (r/map #(apply f % args) old))]
-    (lens t updated)))
+        fd  (clojure.core/->> [old] (concat args) (apply f))]
+    (clojure.core/->>
+     (cond
+      (nil? fd)                            (empty old)
+      (not (instance? IntervalTreeSet fd)) (into (empty old) fd)
+      :else                                fd)
+     (lens t))))
 
-(for [s ['prefix 'selected 'suffix]
-      :let [n (name s)
-            each-n (symbol (str "each-" n))
-            edit-n (symbol (str "edit-" n))]]
-  `(do
-     (def ~each-n (partial each ~s))
-     (def ~edit-n (partial each ~s))))
+(defmacro ->>
+  [t l & body]
+  `(transform ~t ~l (fn [x#] (clojure.core/->> x# ~@body))))
+
+(defmacro ->
+  [t l & body]
+  `(transform ~t ~l (fn [x#] (clojure.core/-> x# ~@body))))
+
+(defmacro as->
+  [t l n & body]
+  `(transform ~t ~l (fn [x#] (clojure.core/as-> x# ~n ~@body))))
 
 (defn contractl-by
   "Contract the covered region to the left until `pred` has returned logical
@@ -173,7 +183,7 @@ the suffix part in the two arg case."
              (with-tree (selected t) r)
              (with-tree (suffix t) s))
       (recur (pop p)
-             (-> r (ft/conjl (peek p)) pop)
+             (clojure.core/-> r (ft/conjl (peek p)) pop)
              (ft/conjl (peek r) s)
              (if (pred (peek p)) (dec n) n)))))
 
@@ -188,7 +198,7 @@ the suffix part in the two arg case."
              (with-tree (selected t) r)
              (with-tree (suffix t) s))
       (recur (pop p)
-             (-> r (ft/conjl (peek p)) pop)
+             (clojure.core/-> r (ft/conjl (peek p)) pop)
              (ft/conjl (peek r) s)))))
 
 (defn slide-left
@@ -209,7 +219,7 @@ the suffix part in the two arg case."
              (with-tree (selected t) r)
              (with-tree (suffix t) s))
       (recur (conj p (first r))
-             (-> r next (conj (peek s)))
+             (clojure.core/-> r next (conj (peek s)))
              (next s)
              (if (pred (first s)) (dec n) n)))))
 
@@ -224,7 +234,7 @@ the suffix part in the two arg case."
              (with-tree (selected t) r)
              (with-tree (suffix t) s))
       (recur (conj p (first r))
-             (-> r next (conj (peek s)))
+             (clojure.core/-> r next (conj (peek s)))
              (next s)))))
 
 (defn slide-right
@@ -235,29 +245,27 @@ the suffix part in the two arg case."
 (defn disj-selected
   "Return an interval treeset with only `prefix` and `suffix`."
   [t]
-  (ft/ft-concat (prefix t) (suffix t)))
+  (it/union (prefix t) (suffix t)))
 
 (defn disj-prefix
   "Return an interval treeset with only `region` and `suffix`."
   [t]
-  (ft/ft-concat (selected t) (suffix t)))
+  (it/union (selected t) (suffix t)))
 
 (defn disj-suffix
   "Return an interval treeset with only `prefix` and `region`."
   [t]
-  (ft/ft-concat (prefix t) (selected t)))
+  (it/union (prefix t) (selected t)))
 
 (defn unselect
   "Combine `prefix`, `region` and `suffix` back together to form an interval
 treeset."
-  [[prefix region suffix]]
-  (-> prefix
-      (ft/ft-concat region)
-      (ft/ft-concat suffix)))
+  [t]
+  (apply it/union t))
 
 (defn overlapping-subset
   "Search `this` for all values which overlap `ival`."
   [ts ival]
-  (-> ts
+  (clojure.core/-> ts
       (it/select-overlapping ival)
       selected))

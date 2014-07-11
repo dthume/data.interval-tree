@@ -1,8 +1,13 @@
 (ns org.dthume.data.test-interval-treeset
   (:require [midje.sweet :refer :all]
+            [clj-tuple :refer (tuple)]
             [clojure.data.finger-tree :as ft]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.interval-treeset.selection :as sel]))
+
+(defn- inc-tuple
+  [[s e]]
+  (tuple (inc s) (inc e)))
 
 (def ts1 (into (it/interval-treeset) [[0 5] [6 10] [11 15] [16 21] [11 21] [22 25]]))
 
@@ -19,6 +24,8 @@
 (def ts4 (into (it/interval-treeset) [[1 3] [15 20] [22 25]]))
 
 (def ts5 (into (it/interval-treeset) [[1 3] [30 35]]))
+
+(def ts6 (into (it/interval-treeset) [[1 3] [11 15] [20 26]]))
 
 (fact "Interval trees support basic seq operations"
   (count ts1)                           => 6 
@@ -134,3 +141,41 @@
       (sel/selected))                   => [{:span [6 10] :key :b}
                                             {:span [11 15] :key :c}])
 
+(facts "The components of a selection can be individually transformed"
+  (fact "Edit passes the component as the first arg to f"
+   (-> ts1
+       (it/select-overlapping [16 18])
+       (sel/edit sel/prefix it/intersection ts6)
+       (sel/unselect))                   => [[11 21] [11 15] [16 21] [22 25]])
+
+  (fact "Transform passes the component as the last arg to f"
+    (-> ts4
+        (it/select-overlapping [16 18])
+        (sel/transform sel/selected map inc-tuple)
+        (sel/unselect))                   => [[1 3] [16 21] [22 25]]))
+
+(facts "The components of a selection can be individually transformed"
+  (fact "-> is analagous to clojure.core/->"
+    (-> ts1
+        (it/select-overlapping [16 18])
+        (sel/-> sel/prefix
+                (it/intersection ts6))
+        (sel/-> sel/selected
+                (it/intersection ts4))
+        (sel/unselect))                   => [[11 15] [22 25]])
+
+  (fact "->> is analagous to clojure.core/->>"
+    (-> ts4
+        (it/select-overlapping [16 18])
+        (sel/->> sel/selected
+                 (map inc-tuple)
+                 (map inc-tuple))
+        (sel/unselect))                   => [[1 3] [17 22] [22 25]])
+
+  (fact "as-> is analagous to clojure.core/as->"
+    (-> ts4
+        (it/select-overlapping [16 18])
+        (sel/as-> sel/selected x
+                  (map inc-tuple x)
+                  (map inc-tuple x))
+        (sel/unselect))                   => [[1 3] [17 22] [22 25]]))
