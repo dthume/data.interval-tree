@@ -135,9 +135,6 @@ resulting selection."))
     (pop [this] (with-tree this (pop tree)))
   Reversible
     (rseq [_] (rseq tree)) ; not 'this' because tree ops can't be reversed
-  ft/ConjL
-    (conjl [this a]
-      (with-tree this (ft/conjl tree a)))
   ft/Measured
     (measured [_] (ft/measured tree))
     (getMeter [_] (ft/getMeter tree)) ; not needed?

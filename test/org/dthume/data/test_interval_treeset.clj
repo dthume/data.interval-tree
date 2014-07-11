@@ -332,7 +332,7 @@
 ;; and
 ;; [`as->`](../codox/org.dthume.data.interval-treeset.selection.html#var-as-.3E),
 ;; which mirror those in `clojure.core` except that they
-;; take _two_ leading arguments: a selection region and a lensing function.
+;; take an extra leading argument: a selection region and a lensing function.
 ;;
 ;; These functions extract a component part from the selection region using
 ;; the lens, thread it through the body of expressions, then return an updated
