@@ -24,7 +24,7 @@
 
 ;; Interval treesets function as efficient sorted sequences:
 ;;
-;; *  `count` is O(1)
+;; * `count` is O(1)
 ;; * `first` is amortized O(1)
 ;; * `conj` is amortized O(log(n))
 (fact "Interval trees support basic seq operations"
@@ -85,7 +85,7 @@
 ;; [original paper](http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf),
 ;; although I confess that the differences between the Haskell in the paper
 ;; and the clojure finger tree implementation mean I'm not altogether confident
-;; that it's completely correct (although the tests seem favourable thus far).
+;; that it's completely correct (that said the tests seem favourable thus far).
 (fact "Interval trees support efficient merging"
   (it/union (ts [1 2] [3 4])
             (ts [5 6] [7 8]))           => [[1 2] [3 4] [5 6] [7 8]]
@@ -108,13 +108,15 @@
   (it/union (ts [0 2] [1 2] [7 8])
             (ts [1 2] [7 10] [7 8]))    => [[0 2] [1 2] [7 8] [7 10]])
 
-;; `intersection` is currently using a naive implementation (the default
+;; [intersection](../codox/org.dthume.data.interval-treeset.html#var-intersection),
+;; is currently using a naive implementation (the default
 ;; from `clojure.set`).
 (fact "Interval trees support intersections"
   (it/intersection (ts [1 2] [3 4])
                    (ts [3 4] [5 6]))    => [[3 4]])
 
-;; `difference` is also currently using a naive implementation (the default
+;; [difference](../codox/org.dthume.data.interval-treeset.html#var-difference),
+;; is also currently using a naive implementation (the default
 ;; from `clojure.set`).
 (fact "Interval trees support differences"
   (it/difference (ts [1 2] [3 4])
@@ -142,8 +144,8 @@
 ;; Selection regions are indexed sequences of 3 items:
 ;; `[prefix selected suffix]`, which is useful in its own right, but
 ;; see below for examples of using the
-;; `org.dthume.data.interval-tree.selection` namespace to work with selection
-;; regions.
+;; [org.dthume.data.interval-tree.selection](../codox/org.dthume.data.interval-treeset.selection.html)
+;; namespace to work with selection regions.
 (fact "Treesets can be partitioned around selection regions"
   (it/select-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
@@ -153,7 +155,17 @@
 
 ;; Each component of a selection region acts as a window, and can be operated
 ;; on individually, but the `selected` component acts as the "primary"
-;; component, and can be expanded or contracted to the left and right sides.
+;; component, and can be expanded or contracted to the left and right sides
+;; using a variety of functions. by convention, functions which manipulate the
+;; left side of the selected region are suffixed with "l", e.g.
+;; [expandl](../codox/org.dthume.data.interval-treeset.selection.html#var-expandl),
+;; [contractl](../codox/org.dthume.data.interval-treeset.selection.html#var-contractl),
+;; [contractl-while](../codox/org.dthume.data.interval-treeset.selection.html#var-contractl-while),
+;; while those which manipulate the right
+;; side are suffixed with "r", e.g.
+;; [expandr](../codox/org.dthume.data.interval-treeset.selection.html#var-expandr),
+;; [contractr](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr),
+;; [contractr-by](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-by).
 (fact "The selected subset can be expanded or contracted on either side"
   (-> (ts [1 2] [3 4] [5 6] [7 8])
       (it/select [3 4])
@@ -192,16 +204,28 @@
                                             {:span [11 15] :key :c}])
 
 ;; Components of a selection region can be individually transformed using
-;; the `edit` and `transform` functions which are similar to
-;; `clojure.core/->` and `clojure.core/->>` except for functions:
+;; the
+;; [edit](../codox/org.dthume.data.interval-treeset.selection.html#var-edit)
+;; and
+;; [transform](../codox/org.dthume.data.interval-treeset.selection.html#var-transform)
+;; functions which are similar to
+;; [clojure.core/->](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/-%3E)
+;; and
+;; [clojure.core/->>](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/-%3E%3E)
+;; except that they operate on functions:
 ;; `edit` passes the current value of a component as the _first_ argument to
 ;; the supplied function, while `transform` passes the current value as the
 ;; _last_ argument.
 ;;
 ;; Both `edit` and `transform` use _lenses_ to select a particular component
 ;; part to work with; in this case there are three lenses:
-;; `prefix`, `selected` and `suffix`, all in the
-;; `org.dthume.interval-tree.selection` namespace.
+;; [prefix](../codox/org.dthume.data.interval-treeset.selection.html#var-prefix),
+;; [selected](../codox/org.dthume.data.interval-treeset.selection.html#var-selected)
+;; and
+;; [suffix](../codox/org.dthume.data.interval-treeset.selection.html#var-suffix),
+;; all in the
+;; [org.dthume.data.interval-tree.selection](../codox/org.dthume.data.interval-treeset.selection.html)
+;; namespace.
 ;;
 ;; Both `edit` and `transform` coerce the result of the supplied function to an
 ;; interval treeset; for more details see the codox docs.
@@ -237,7 +261,11 @@
       (sel/unselect))                   => [[1 2] [3 4] [5 6]])
 
 ;; For even more inline goodness, there are three threading operators provided,
-;; `->`, `->>` and `as->`, which mirror those in `clojure.core` except that they
+;; [->](../codox/org.dthume.data.interval-treeset.selection.html#var--.3E),
+;; [->>](../codox/org.dthume.data.interval-treeset.selection.html#var--.3E.3E)
+;; and
+;; [as->](../codox/org.dthume.data.interval-treeset.selection.html#var-as-.3E),
+;; which mirror those in `clojure.core` except that they
 ;; take _two_ leading arguments: a selection region and a lensing function.
 ;;
 ;; One downside of these functions is that they prevent you from just `refer`ing
