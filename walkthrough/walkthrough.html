@@ -3029,11 +3029,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>data.interval-treeset Walkthrough -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">data.interval-treeset Walkthrough</h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>An introduction to data.interval-treeset</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">clj-tuple</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/data.finger-tree</td><td class="dotted"><hr /></td><td class="dep-version">0.0.2</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#org.dthume.data.test-interval-treeset">org.dthume.data.test-interval-treeset</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#org.dthume.data.test-interval-treeset" name="org.dthume.data.test-interval-treeset"><h1 class="project-name">org.dthume.data.test-interval-treeset</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(ns org.dthume.data.test-interval-treeset
-  (:require [midje.sweet :refer :all]
-            [org.dthume.data.interval-treeset :as it]
-            [org.dthume.data.interval-treeset.selection :as sel]))</pre></td></tr><tr><td class="docs"><h2>Intro</h2>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">clj-tuple</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/data.finger-tree</td><td class="dotted"><hr /></td><td class="dep-version">0.0.2</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#org.dthume.data.test-interval-treeset">org.dthume.data.test-interval-treeset</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#org.dthume.data.test-interval-treeset" name="org.dthume.data.test-interval-treeset"><h1 class="project-name">org.dthume.data.test-interval-treeset</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Intro</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>This walkthrough aims to introduce the
 <a href="https://github.com/dthume/data.interval-tree">data.finger-tree</a>
 library via an annotated code walkthrough. It also functions as the
@@ -3041,7 +3037,10 @@ set of unit tests for the library. The fact that this can be done
 while still producing a fairly pleasant experience from both points
 of view is quite humbling, frankly. Which is fitting given that the
 experience of implementing the data structure was similarly humbling.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><h2>Utilities</h2>
+</td><td class="codes"><pre class="brush: clojure">(ns org.dthume.data.test-interval-treeset
+  (:require [midje.sweet :refer :all]
+            [org.dthume.data.interval-treeset :as it]
+            [org.dthume.data.interval-treeset.selection :as sel]))</pre></td></tr><tr><td class="docs"><h2>Utilities</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>A basic transformation function for use in update tests.
 For brevity the majority of our examples will simply use sets or raw
 intervals rather than using a custom interval lens, and this gives
