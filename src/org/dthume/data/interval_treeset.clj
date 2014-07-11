@@ -62,16 +62,18 @@ the interval which they occupy."}
 (defprotocol IPersistentIntervalSet
   (union* [this other]
     "Merge `this` set with `other`.")
-  (first-overlapping [this ival] [this ival n-f]
+  (first-overlapping* [this ival] [this ival n-f]
     "Search `this` for the first value which overlaps `ival`, returning `nil`
 if none is found in the two arg case, or `n-f` in the three arg case.")
-  (select [this k])
-  (select-overlapping [this ival]
+  (select* [this k])
+  (select-overlapping* [this ival]
     "Select the subregion of this set which overlaps `ival`, returning a tuple
 of the form `[prefix selected suffix]` where `prefix`, `selected` and
 `suffix` are all interval treesets. The methods in
 `org.dthume.data.finger-tree.selection` may prove useful in working with the
 resulting selection."))
+
+(alter-meta! #'IPersistentIntervalSet assoc :no-doc true)
 
 (defn- it-at-least
   [compare-point x]
@@ -253,15 +255,15 @@ resulting selection."))
                (if existing?
                  (recur new-res br r)
                  (recur (conj new-res bf) br r))))))))
-    (first-overlapping [this ival]
-      (first-overlapping this ival nil))
-    (first-overlapping [this ival n-f]
+    (first-overlapping* [this ival]
+      (first-overlapping* this ival nil))
+    (first-overlapping* [this ival n-f]
       (let [[ik ip] ival
             [l x r] (ft/split-tree tree (it-at-least compare-point ik))]
          (if (>= 0 (compare-point (ival-start x) ip))
            x
            n-f)))
-    (select-overlapping [this ival]
+    (select-overlapping* [this ival]
       (let [[ik ip] ival
             [l x r] (ft/split-tree tree (it-greater compare-point ip))
             [xs xe] (as-interval x)
@@ -274,7 +276,7 @@ resulting selection."))
             (tuple (with-tree this l2)
                    (with-tree this (ft/conjl r2 x2))
                    (with-tree this rr))))))
-    (select [this k]
+    (select* [this k]
       (let [ki      (as-interval k)
             [ks ke] ki
             start-not= #(->> %
@@ -433,3 +435,25 @@ resulting selection."))
      (clojure.set/difference s1 s2))
   ([s1 s2 & sets]
      (apply clojure.set/difference s1 s2 sets)))
+
+(defn first-overlapping
+  "Search `this` for the first value which overlaps `ival`, returning `nil`
+if none is found in the two arg case, or `n-f` in the three arg case."
+  ([this ival]
+     (first-overlapping* this ival))
+  ([this ival n-f]
+     (first-overlapping* this ival n-f)))
+
+(defn select
+  "Return a selection whose selected part contains a single item - `k`."
+  [this k]
+  (select* this k))
+
+(defn select-overlapping
+  "Select the subregion of this set which overlaps `ival`, returning a tuple
+of the form `[prefix selected suffix]` where `prefix`, `selected` and
+`suffix` are all interval treesets. The methods in
+`org.dthume.data.finger-tree.selection` may prove useful in working with the
+resulting selection."
+  [this ival]
+  (select-overlapping* this ival))
