@@ -21,7 +21,7 @@ generated documentation can be found
 
 [marginalia](https://github.com/gdeer81/marginalia)
 generated documentation can be found
-[here](http://dthume.github.io/data.interval-tree/tests/uberdoc.html).
+[here](http://dthume.github.io/data.interval-tree/walkthrough/walkthrough.html).
 
 
 ## Basic Usage

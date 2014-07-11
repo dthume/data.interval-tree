@@ -293,7 +293,9 @@ component part value."
   "Combine `prefix`, `region` and `suffix` back together to form an interval
 treeset."
   [t]
-  (apply it/union t))
+  (clojure.core/->> t
+                    (filter identity)
+                    (apply it/union)))
 
 (defn overlapping-subset
   "Search `this` for all values which overlap `ival`."

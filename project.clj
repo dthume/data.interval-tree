@@ -1,5 +1,5 @@
 (defproject org.dthume/data.interval-treeset "0.1.0-SNAPSHOT"
-  :description "Interval Tree"
+  :description "Interval Treeset based on finger trees."
 
   :plugins [[codox "0.8.9"]
             [lein-marginalia "0.7.1"]
@@ -27,7 +27,9 @@
    :benchmark
    {:jvm-opts ^:replace
     ["-XX:+DoEscapeAnalysis"
-     "-XX:+UseBiasedLocking"]}}
+     "-XX:+UseBiasedLocking"]}
+
+   :site {}}
 
   :aliases
   {"dev-bench"
@@ -44,4 +46,13 @@
 
    "dev-doc"
    ^{:doc "Start a clean development NREPL session"}
-   ["do" ["clean"] ["doc"] ["marg" "--dir" "doc/tests" "test/org/dthume/data/test_interval_treeset.clj"]]})
+   ["with-profile" "site"
+    ["do"
+     ["clean"]
+     ["doc"]
+     ["marg"
+      "--dir" "doc/walkthrough"
+      "--name" "data.interval-treeset Walkthrough"
+      "--desc" "An introduction to data.interval-treeset"
+      "--file" "walkthrough"
+      "test/org/dthume/data/test_interval_treeset.clj"]]]})
