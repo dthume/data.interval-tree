@@ -3077,7 +3077,9 @@ is amortized O(log(n))</li>
 
   (second (ts [3 4] [1 2]))             =&gt; [3 4]
 
-  (conj (ts [1 2]) [3 4])               =&gt; [[1 2] [3 4]])</pre></td></tr><tr><td class="docs"><p>Interval tree sets can be used as efficient indexed collections:</p>
+  (conj (ts [1 2]) [3 4])               =&gt; [[1 2] [3 4]])</pre></td></tr><tr><td class="docs"><p>And of course they're sets, so adding duplicate items is a noop.</p>
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets cannot contain duplicate items&quot;
+  (conj (ts [1 2]) [1 2])               =&gt; [[1 2]])</pre></td></tr><tr><td class="docs"><p>Interval tree sets can be used as efficient indexed collections:</p>
 
 <ul>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/nth"><code>nth</code></a>
