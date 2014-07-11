@@ -111,6 +111,17 @@
 ;; although I confess that the differences between the Haskell in the paper
 ;; and the clojure finger tree implementation mean I'm not altogether confident
 ;; that it's completely correct (that said the tests seem favourable thus far).
+;; Assuming that it _is_ correct then:
+;;
+;; * [`union`](../codox/org.dthume.data.interval-treeset.html#var-union)
+;;   is:
+;;
+;;     - O(m log(n/m)) in the general case of merging another interval treeset.
+;;     - O(log m) for two treesets where max xs <= min ys (or vice versa).
+;;
+;; Note that if one of the latter arguments is _not_ an interval treeset then
+;; it will simply be merged with
+;; [`conj`](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/conj).
 (fact "Interval trees support efficient merging"
   (it/union (ts [1 2] [3 4])
             (ts [5 6] [7 8]))           => [[1 2] [3 4] [5 6] [7 8]]
@@ -137,7 +148,6 @@
 ;; is currently using a naive implementation (the default
 ;; from
 ;; [`clojure.set`](http://clojure.github.io/clojure/clojure.set-api.html)).
-
 (fact "Interval trees support intersections"
   (it/intersection (ts [1 2] [3 4])
                    (ts [3 4] [5 6]))    => [[3 4]])
@@ -196,6 +206,27 @@
 ;; [`expandr`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandr),
 ;; [`contractr`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr),
 ;; [`contractr-by`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-by).
+;;
+;; Functions are provided for:
+;;
+;; * Expanding / contracting by a specific number of items
+;;   ([`expandl`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandl),
+;;    [`contractl`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractl),
+;;    [`expandr`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandr),
+;;    [`contractr`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr))
+;;
+;; * Expanding / contracting until a predicate returns logical `false`
+;;   ([`expandl-while`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandl-while),
+;;    [`contractl-while`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractl-while),
+;;    [`expandr-while`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandr-while),
+;;    [`contractr-while`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-while))
+;;
+;; * Expanding / contracting until a predicate has returned logical `true` a
+;;   set number of times:
+;;   ([`expandl-by`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandl-by),
+;;    [`contractl-by`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractl-by),
+;;    [`expandr-by`](../codox/org.dthume.data.interval-treeset.selection.html#var-expandr-by),
+;;    [`contractr-by`](../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-by))
 (fact "The selected subset can be expanded or contracted on either side"
   (-> (ts [1 2] [3 4] [5 6] [7 8])
       (it/select [3 4])
@@ -302,6 +333,13 @@
 ;; [`as->`](../codox/org.dthume.data.interval-treeset.selection.html#var-as-.3E),
 ;; which mirror those in `clojure.core` except that they
 ;; take _two_ leading arguments: a selection region and a lensing function.
+;;
+;; These functions extract a component part from the selection region using
+;; the lens, thread it through the body of expressions, then return an updated
+;; selection region with the result of the body in place of the original
+;; component part.
+;; Results from the body expressions are coerced to treesets as with
+;; [`edit`](../codox/org.dthume.data.interval-treeset.selection.html#var-edit).
 ;;
 ;; One downside of these functions is that they prevent you from just `refer`ing
 ;; the entire selection namespace. But you wouldn't do that anyway, right?
