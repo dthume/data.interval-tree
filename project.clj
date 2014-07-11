@@ -54,5 +54,5 @@
       "--dir" "doc/walkthrough"
       "--name" "data.interval-treeset Walkthrough"
       "--desc" "An introduction to data.interval-treeset"
-      "--file" "walkthrough"
+      "--file" "walkthrough.html"
       "test/org/dthume/data/test_interval_treeset.clj"]]]})

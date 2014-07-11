@@ -19,8 +19,8 @@ Largely based on the implementation described in the
 generated documentation can be found
 [here](http://dthume.github.io/data.interval-tree/codox/index.html).
 
-[marginalia](https://github.com/gdeer81/marginalia)
-generated documentation can be found
+A [marginalia](https://github.com/gdeer81/marginalia)
+generated walkthrough of the library can be found
 [here](http://dthume.github.io/data.interval-tree/walkthrough/walkthrough.html).
 
 
