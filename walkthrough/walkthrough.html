@@ -3130,7 +3130,20 @@ intervals, as show by the example with a custom interval lens.</p>
 <a href="http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf">original paper</a>,
 although I confess that the differences between the Haskell in the paper
 and the clojure finger tree implementation mean I'm not altogether confident
-that it's completely correct (that said the tests seem favourable thus far).</p>
+that it's completely correct (that said the tests seem favourable thus far).
+Assuming that it <em>is</em> correct then:</p>
+
+<ul>
+<li><p><a href="../codox/org.dthume.data.interval-treeset.html#var-union"><code>union</code></a>
+is:</p>
+
+<ul><li>O(m log(n/m)) in the general case of merging another interval treeset.</li>
+<li>O(log m) for two treesets where max xs &lt;= min ys (or vice versa).</li></ul></li>
+</ul>
+
+<p>Note that if one of the latter arguments is <em>not</em> an interval treeset then
+it will simply be merged with
+<a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/conj"><code>conj</code></a>.</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support efficient merging&quot;
   (it/union (ts [1 2] [3 4])
             (ts [5 6] [7 8]))           =&gt; [[1 2] [3 4] [5 6] [7 8]]
@@ -3155,7 +3168,6 @@ that it's completely correct (that said the tests seem favourable thus far).</p>
 is currently using a naive implementation (the default
 from
 <a href="http://clojure.github.io/clojure/clojure.set-api.html"><code>clojure.set</code></a>).</p>
-</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support intersections&quot;
   (it/intersection (ts [1 2] [3 4])
                    (ts [3 4] [5 6]))    =&gt; [[3 4]])</pre></td></tr><tr><td class="docs"><p><a href="../codox/org.dthume.data.interval-treeset.html#var-difference"><code>difference</code></a>
@@ -3207,6 +3219,27 @@ side are suffixed with "r", e.g.
 <a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandr"><code>expandr</code></a>,
 <a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr"><code>contractr</code></a>,
 <a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-by"><code>contractr-by</code></a>.</p>
+
+<p>Functions are provided for:</p>
+
+<ul>
+<li><p>Expanding / contracting by a specific number of items
+(<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandl"><code>expandl</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractl"><code>contractl</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandr"><code>expandr</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr"><code>contractr</code></a>)</p></li>
+<li><p>Expanding / contracting until a predicate returns logical <code>false</code>
+(<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandl-while"><code>expandl-while</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractl-while"><code>contractl-while</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandr-while"><code>expandr-while</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-while"><code>contractr-while</code></a>)</p></li>
+<li><p>Expanding / contracting until a predicate has returned logical <code>true</code> a
+set number of times:
+(<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandl-by"><code>expandl-by</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractl-by"><code>contractl-by</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-expandr-by"><code>expandr-by</code></a>,
+<a href="../codox/org.dthume.data.interval-treeset.selection.html#var-contractr-by"><code>contractr-by</code></a>)</p></li>
+</ul>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;The selected subset can be expanded or contracted on either side&quot;
   (-&gt; (ts [1 2] [3 4] [5 6] [7 8])
       (it/select [3 4])
