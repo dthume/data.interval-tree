@@ -1,8 +1,3 @@
-(ns org.dthume.data.test-interval-treeset
-  (:require [midje.sweet :refer :all]
-            [org.dthume.data.interval-treeset :as it]
-            [org.dthume.data.interval-treeset.selection :as sel]))
-
 ;; ## Intro
 
 ;; This walkthrough aims to introduce the
@@ -12,6 +7,10 @@
 ;; while still producing a fairly pleasant experience from both points
 ;; of view is quite humbling, frankly. Which is fitting given that the
 ;; experience of implementing the data structure was similarly humbling.
+(ns org.dthume.data.test-interval-treeset
+  (:require [midje.sweet :refer :all]
+            [org.dthume.data.interval-treeset :as it]
+            [org.dthume.data.interval-treeset.selection :as sel]))
 
 ;; ## Utilities
 
@@ -56,6 +55,10 @@
   (second (ts [3 4] [1 2]))             => [3 4]
 
   (conj (ts [1 2]) [3 4])               => [[1 2] [3 4]])
+
+;; And of course they're sets, so adding duplicate items is a noop.
+(fact "Interval treesets cannot contain duplicate items"
+  (conj (ts [1 2]) [1 2])               => [[1 2]])
 
 ;; Interval tree sets can be used as efficient indexed collections:
 ;;

@@ -20,13 +20,13 @@ generated documentation can be found
 [here](http://dthume.github.io/data.interval-tree/codox/index.html).
 
 A [marginalia](https://github.com/gdeer81/marginalia)
-generated walkthrough of the library can be found
+generated walkthrough of how to use the library can be found
 [here](http://dthume.github.io/data.interval-tree/walkthrough/walkthrough.html).
 
 
 ## Basic Usage
 
-For a full set of examples, see the tests.
+For a full set of examples, see the walkthrough.
 
 ```clojure
 ;; just for this documentation
@@ -76,16 +76,7 @@ Items will be added at the correct position:
 ```clojure
 (conj ts [1 4]) ;; Amortized O(log(n))
 ;; => ([0 2] [1 4] [3 5] [6 8])
-```
 
-Adding an existing item is a noop:
-
-```clojure
-(conj ts [0 2])
-;; => ([0 2] [3 5] [6 8])
-```
-
-```clojure
 (count ts) ;; O(1)
 ;; => 3
 
@@ -107,71 +98,6 @@ Adding an existing item is a noop:
 
 You should probably _not_ attempt to `use` or `(require ... :refer :all)` the
 selection namespace, since it contains vars which shadow `clojure.core`.
-
-Selections allow a set to be divided up into three consecutive subsets:
-the `prefix`, the `selected`, and the `suffix`. The `selected` region
-can be expanded or contracted using a variety of methods, as well as
-being moved left or right (providing windowing functionality). A selection
-is represented as a vector or tuple :
-
-```clojure
-[prefix selected suffix]
-```
-
-Initial selections can be obtained using `select-overlapping` on a tree:
-
-```clojure
-(-> ts
-    (it/select-overlapping [0 4]))
-;; => [() ([0 2] [3 5]) ([6 8])]
-
-(-> ts
-    (it/select-overlapping [0 4])
-    (sel/selected)
-;; => ([0 2] [3 5])
-
-(-> ts
-    (it/select-overlapping [0 4])
-    (sel/suffix)
-;; => ([6 8])
-```
-
-The selected region can be expanded or contracted:
-
-```clojure
-(-> ts
-    (it/select-overlapping [3 4])
-    (sel/selected))
-;; => ([3 5])
-
-(-> ts
-    (it/select-overlapping [3 4])
-    (sel/expandl 1)
-    (sel/selected))
-;; => ([0 2] [3 5])
-
-(-> ts
-    (it/select-overlapping [3 4])
-    (sel/expandr 1)
-    (sel/selected))
-;; => ([3 5] [6 8])
-
-(-> ts
-    (it/select-overlapping [3 4])
-    (sel/expandr 1)
-    (sel/contractl 1)
-    (sel/selected))
-;; => ([6 8])
-```
-
-The selection can be recombined into an interval tree:
-
-```clojure
-(-> ts
-    (it/select-overlapping [3 4])
-    (sel/unselect))
-;; => ([0 2] [3 5] [6 8])
-```
 
 ## TODO
 
