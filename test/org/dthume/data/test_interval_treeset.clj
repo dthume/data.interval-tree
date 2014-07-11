@@ -1,7 +1,5 @@
 (ns org.dthume.data.test-interval-treeset
   (:require [midje.sweet :refer :all]
-            [clj-tuple :refer (tuple)]
-            [clojure.data.finger-tree :as ft]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.interval-treeset.selection :as sel]))
 
@@ -9,7 +7,7 @@
 (defn- shiftt
   [op x]
   (fn [[s e]]
-    (tuple (op s x) (op e x))))
+    (it/interval (op s x) (op e x))))
 
 ;; Utility fn for creating treesets succinctly
 (let [empty-set (it/interval-treeset)]
