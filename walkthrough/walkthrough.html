@@ -3209,7 +3209,16 @@ from
 <a href="http://clojure.github.io/clojure/clojure.set-api.html"><code>clojure.set</code></a>).</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support differences&quot;
   (it/difference (ts [1 2] [3 4])
-                 (ts [3 4] [5 6]))      =&gt; [[1 2]])</pre></td></tr><tr><td class="docs"><p>Lookup of the first overlapping item, as described in the original paper</p>
+                 (ts [3 4] [5 6]))      =&gt; [[1 2]]
+
+  (it/difference (ts [1 2] [3 4])
+                 (ts [1 2] [5 6]))      =&gt; [[3 4]]
+
+  (it/difference (ts [1 2] [3 4])
+                 (ts [1 2] [3 4]))      =&gt; []
+
+  (it/difference (ts [1 2] [3 4])
+                 (ts [5 6] [7 8]))      =&gt; [[1 2] [3 4]])</pre></td></tr><tr><td class="docs"><p>Lookup of the first overlapping item, as described in the original paper</p>
 
 <ul>
 <li><a href="../codox/org.dthume.data.interval-treeset.html#var-first-overlapping"><code>first-overlapping</code></a>
