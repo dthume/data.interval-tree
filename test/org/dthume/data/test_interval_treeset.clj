@@ -193,7 +193,16 @@
 ;; [`clojure.set`](http://clojure.github.io/clojure/clojure.set-api.html)).
 (fact "Interval treesets support differences"
   (it/difference (ts [1 2] [3 4])
-                 (ts [3 4] [5 6]))      => [[1 2]])
+                 (ts [3 4] [5 6]))      => [[1 2]]
+
+  (it/difference (ts [1 2] [3 4])
+                 (ts [1 2] [5 6]))      => [[3 4]]
+
+  (it/difference (ts [1 2] [3 4])
+                 (ts [1 2] [3 4]))      => []
+
+  (it/difference (ts [1 2] [3 4])
+                 (ts [5 6] [7 8]))      => [[1 2] [3 4]])
 
 ;; Lookup of the first overlapping item, as described in the original paper
 ;; 
