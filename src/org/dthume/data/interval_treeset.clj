@@ -10,7 +10,9 @@ the interval which they occupy."}
             (clojure.core [protocols :as core-protocols]
                           [reducers :as r])
             [clojure.data.finger-tree :as ft]
-            [clojure.set])
+            [clojure.pprint]
+            [clojure.set]
+            [org.dthume.data.set :as set-p])
   (:import (clojure.lang Seqable Sequential ISeq IPersistentSet ILookup
                          IPersistentStack IPersistentCollection Associative
                          Sorted Reversible Indexed Counted IHashEq)))
@@ -60,6 +62,8 @@ the interval which they occupy."}
   (ft/split-tree tree #(>= 0 (compare-point k (ival-start %)))))
 
 (defprotocol IPersistentIntervalSet
+  (covered-range* [this] "Return the covered range (i.e. min start and max
+end) of the items in this set")
   (union* [this other]
     "Merge `this` set with `other`.")
   (first-overlapping* [this ival] [this ival n-f]
@@ -117,12 +121,22 @@ resulting selection."))
               [xs xe]  xi
               compared (compare-point vs xs)
               compared (if (zero? compared)
-                         (compare-point ve xe)
+                         (* -1 (compare-point ve xe))
                          compared)]
-          (if (and (zero? compared) (= x vi))
-            this ; already in set
-            (let [[a b] (if (>= 0 compared) (tuple value x) (tuple x value))]
-              (with-tree this (ft/ft-concat (conj l a) (ft/conjl r b))))))))
+          (cond
+           (and (zero? compared) (= x value)) this ; already in set
+           
+           (empty? r)
+           (if (pos? compared)
+             (with-tree this (conj tree value))
+             (with-tree this (conj l value x)))
+
+           :else
+           (let [l2 (take-while #(= vs (nth (as-interval %) 0)) r)]
+             (if (some #(= value %) l2)
+               this
+               (let [[a b] (if (>= 0 compared) (tuple value x) (tuple x value))]
+                 (with-tree this (ft/ft-concat (conj l a) (ft/conjl r b))))))))))
     (empty [this] (with-tree this (empty tree)))
     (equiv [this x] (.equals this x)) ; TBD
   ISeq
@@ -236,25 +250,38 @@ resulting selection."))
     (size [this] (count this))
     (toArray [_] nil)
     (toArray [_ a] nil)
+  set-p/SetAlgebra
+  (set-union [this other]
+    (if-not (instance? IntervalTreeSet other)
+      (into this other)
+      (let [^IntervalTreeSet iother other]
+        (loop [res (empty (.tree this)) as tree bs (.tree iother)]
+          (cond
+           (empty? as)
+           (union-result this as-interval res bs)
+           
+           (empty? bs)
+           (union-result this as-interval res as)
+           
+           :else
+           (let [[existing? new-res bf br r]
+                 (union-recur as-interval compare-point res as bs)]
+             (if existing?
+               (recur new-res br r)
+               (recur (conj new-res bf) br r))))))))
+  (set-intersection [lhs rhs]
+    (clojure.set/intersection lhs rhs))
+  (set-difference [lhs rhs]
+    (clojure.set/difference lhs rhs))
   IPersistentIntervalSet
+    (covered-range* [this]
+      (if (empty? tree)
+        nil 
+        (let [start (-> this first as-interval (nth 0))
+              end (-> this ft/measured ival-end)]
+          (tuple start end))))
     (^Object union* [^IntervalTreeSet this ^Object other]
-      (if-not (instance? IntervalTreeSet other)
-        (into this other)
-        (let [^IntervalTreeSet iother other]
-          (loop [res (empty (.tree this)) as tree bs (.tree iother)]
-            (cond
-             (empty? as)
-             (union-result this as-interval res bs)
-
-             (empty? bs)
-             (union-result this as-interval res as)
-             
-             :else
-             (let [[existing? new-res bf br r]
-                   (union-recur as-interval compare-point res as bs)]
-               (if existing?
-                 (recur new-res br r)
-                 (recur (conj new-res bf) br r))))))))
+      (.set-union this other))
     (first-overlapping* [this ival]
       (first-overlapping* this ival nil))
     (first-overlapping* [this ival n-f]
@@ -299,6 +326,13 @@ resulting selection."))
                    (with-tree this r)))))))
 
 (alter-meta! #'->IntervalTreeSet assoc :no-doc true)
+
+(defmethod print-method IntervalTreeSet [^IntervalTreeSet o, ^java.io.Writer w]
+  (print-method (.tree o) w))
+
+(defmethod clojure.pprint/simple-dispatch IntervalTreeSet
+  [^IntervalTreeSet o]
+  (clojure.pprint/simple-dispatch (.tree o)))
 
 (defn- with-tree
   [^IntervalTreeSet base tree]
@@ -409,32 +443,15 @@ resulting selection."))
               empty-tree (ft/->EmptyTree interval-meter)]
     (IntervalTreeSet. as-interval compare-point empty-tree nil)))
 
-(defn union
-  "Return a set that is the union of the input sets"
-  ([s1]
-     s1)
-  ([s1 s2]
-     (union* s1 s2))
-  ([s1 s2 & sets]
-     (reduce union* (union* s1 s2) sets)))
+(def union set-p/union)
+(def intersection set-p/intersection)
+(def difference set-p/difference)
 
-(defn intersection
-  "Return a set that is the intersection of the input sets"
-  ([s1]
-     s1)
-  ([s1 s2]
-     (clojure.set/intersection s1 s2))
-  ([s1 s2 & sets]
-     (apply clojure.set/intersection s1 s2 sets)))
-
-(defn difference
-  "Return a set that is the first set without elements of the remaining sets"
-  ([s1]
-     s1)
-  ([s1 s2]
-     (clojure.set/difference s1 s2))
-  ([s1 s2 & sets]
-     (apply clojure.set/difference s1 s2 sets)))
+(defn covered-range
+  "Return the covered range, i.e. minimum start value and maximum end value, of
+the intervals of all the items in interval treeset `t`."
+  [t]
+  (covered-range* t))
 
 (defn first-overlapping
   "Search `this` for the first value which overlaps `ival`, returning `nil`

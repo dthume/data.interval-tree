@@ -101,6 +101,7 @@ selection namespace, since it contains vars which shadow `clojure.core`.
 
 ## TODO
 
+- Confirm union correct wrt paper.
 - Implement more efficient intersection/difference as with union.
 - Customize print-method to print as set rather than seq?
 
