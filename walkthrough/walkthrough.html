@@ -3029,7 +3029,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>data.interval-treeset Walkthrough -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">data.interval-treeset Walkthrough</h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>An introduction to data.interval-treeset</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">clj-tuple</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/data.finger-tree</td><td class="dotted"><hr /></td><td class="dep-version">0.0.2</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#org.dthume.data.test-interval-treeset">org.dthume.data.test-interval-treeset</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#org.dthume.data.test-interval-treeset" name="org.dthume.data.test-interval-treeset"><h1 class="project-name">org.dthume.data.test-interval-treeset</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Intro</h2>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">clj-tuple</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.6.0</td></tr><tr><td class="dep-name">org.clojure/data.finger-tree</td><td class="dotted"><hr /></td><td class="dep-version">0.0.2</td></tr><tr><td class="dep-name">org.dthume/data.set</td><td class="dotted"><hr /></td><td class="dep-version">0.1.0-SNAPSHOT</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#org.dthume.data.test-interval-treeset">org.dthume.data.test-interval-treeset</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#org.dthume.data.test-interval-treeset" name="org.dthume.data.test-interval-treeset"><h1 class="project-name">org.dthume.data.test-interval-treeset</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Intro</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>This walkthrough aims to introduce the
 <a href="https://github.com/dthume/data.interval-tree">data.finger-tree</a>
 library via an annotated code walkthrough. It also functions as the
@@ -3051,7 +3051,9 @@ more of the values contained in a set.</p>
   (fn [[s e]]
     (it/interval (op s x) (op e x))))</pre></td></tr><tr><td class="docs"><p>Utility fn for creating treesets succinctly</p>
 </td><td class="codes"><pre class="brush: clojure">(let [empty-set (it/interval-treeset)]
-  (defn ts [&amp; items] (into empty-set items)))</pre></td></tr><tr><td class="docs"><p>Another for treesets using a custom interval lens
+  (defn ts [&amp; items]
+    (if (empty? items) empty-set
+        (into empty-set items))))</pre></td></tr><tr><td class="docs"><p>Another for treesets using a custom interval lens
 When we want to store something other than raw intervals, we can supply a
 lensing function with <code>:as-interval</code> which must be a function of one
 argument which, when applied to a set item, returns an interval.</p>
@@ -3067,7 +3069,7 @@ is amortized O(1)</li>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/conj"><code>conj</code></a>
 is amortized O(log(n))</li>
 </ul>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support basic seq operations&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support basic seq operations&quot;
   (= (ts [1 2]) (ts [1 2]))             =&gt; true
 
   (count (ts [1 2] [3 4]))              =&gt; 2
@@ -3076,9 +3078,21 @@ is amortized O(log(n))</li>
 
   (second (ts [3 4] [1 2]))             =&gt; [3 4]
 
-  (conj (ts [1 2]) [3 4])               =&gt; [[1 2] [3 4]])</pre></td></tr><tr><td class="docs"><p>And of course they're sets, so adding duplicate items is a noop.</p>
+  (conj (ts [1 2]) [3 4])               =&gt; [[1 2] [3 4]])</pre></td></tr><tr><td class="docs"><p>And of course they're sets, so adding duplicate items is a noop.
+Items are added at the correct location based on the interval and,
+if a custom lens is used, do not themselves have to be intervals.</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets cannot contain duplicate items&quot;
-  (conj (ts [1 2]) [1 2])               =&gt; [[1 2]])</pre></td></tr><tr><td class="docs"><p>Interval tree sets can be used as efficient indexed collections:</p>
+  (conj (ts [1 2]) [1 2])               =&gt; [[1 2]]
+
+  (conj (ts [0 3] [4 6] [7 8]) [0 6])   =&gt; [[0 6] [0 3] [4 6] [7 8]]
+
+  (conj (cts {:span [0 3] :key :a}
+             {:span [4 6] :key :b}
+             {:span [7 9] :key :c})
+        {:span [0 6] :key :ab})         =&gt; [{:span [0 6] :key :ab}
+                                            {:span [0 3] :key :a}
+                                            {:span [4 6] :key :b}
+                                            {:span [7 9] :key :c}])</pre></td></tr><tr><td class="docs"><p>Interval tree sets can be used as efficient indexed collections:</p>
 
 <ul>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/nth"><code>nth</code></a>
@@ -3086,22 +3100,27 @@ is amortized O(log(n))</li>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/contains?"><code>contains?</code></a>
 is amortized O(log(n))</li>
 </ul>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support indexed operations&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support indexed operations&quot;
   (nth (ts [1 2] [3 4] [5 6]) 2)        =&gt; [5 6]
 
   (contains? (ts [1 2] [3 4]) [1 2])    =&gt; true
-  (contains? (ts [1 2] [3 4]) [1 3])    =&gt; false)</pre></td></tr><tr><td class="docs"><p>Interval tree sets are equally efficient at either end:</p>
+
+  (contains? (ts [1 2] [3 4]) [1 3])    =&gt; false)</pre></td></tr><tr><td class="docs"><p>Interval treesets are equally efficient at either end:</p>
 
 <ul>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/peek"><code>peek</code></a>
 is amortized O(1)</li>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/pop"><code>pop</code></a>
 is amortized O(1)</li>
+<li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/rseq"><code>rseq</code></a>
+is amortized O(1)</li>
 </ul>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support stack operations&quot;
   (peek (ts [1 2] [3 4] [5 6]))         =&gt; [5 6]
 
-  (pop (ts [1 2] [3 4] [5 6]))          =&gt; [[1 2] [3 4]])</pre></td></tr><tr><td class="docs"><p>Interval tree sets function as associative collections:</p>
+  (pop (ts [1 2] [3 4] [5 6]))          =&gt; [[1 2] [3 4]]
+
+  (rseq (ts [1 2] [3 4] [5 6]))         =&gt; [[5 6] [3 4] [1 2]])</pre></td></tr><tr><td class="docs"><p>Interval treesets function as associative collections:</p>
 
 <ul>
 <li><a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/get"><code>get</code></a>
@@ -3112,7 +3131,7 @@ is amortized O(log(n))</li>
 
 <p>Note that <code>get</code>, <code>disj</code> etc. expect items, not necessarily
 intervals, as show by the example with a custom interval lens.</p>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support associative operations&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support associative operations&quot;
   (get (ts [1 2] [3 4]) [3 4])          =&gt; [3 4]
 
   (get (ts [1 2] [3 4]) [5 6])          =&gt; nil
@@ -3127,7 +3146,20 @@ intervals, as show by the example with a custom interval lens.</p>
             {:span [22 25] :key :f})
        {:span [11 15] :key :c})         =&gt; {:span [11 15] :key :c}
 
-  (disj (ts [1 2] [3 4] [5 6]) [3 4])   =&gt; [[1 2] [5 6]])</pre></td></tr><tr><td class="docs"><p>The merge algorithm is based on the one in the
+  (disj (ts [1 2] [3 4] [5 6]) [3 4])   =&gt; [[1 2] [5 6]])</pre></td></tr><tr><td class="docs"><p>Finding the covered range quickly is useful for, among other things,
+creating <a href="https://github.com/clojure/core.logic">core.logic</a>
+finite domains. Now that you're armed with <em>that</em> answer, I'm sure you'll
+think of an interesting question...</p>
+
+<ul>
+<li><a href="../codox/org.dthume.data.interval-treeset.html#var-covered-range"><code>covered-range</code></a>
+is amortized O(1).</li>
+</ul>
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets can efficiently find the covered range&quot;
+  (it/covered-range (ts [1 2] [5 6] [8 9]))
+                                        =&gt; [1 9]
+
+  (it/covered-range (ts))               =&gt; nil)</pre></td></tr><tr><td class="docs"><p>The merge algorithm is based on the one in the
 <a href="http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf">original paper</a>,
 although I confess that the differences between the Haskell in the paper
 and the clojure finger tree implementation mean I'm not altogether confident
@@ -3145,7 +3177,7 @@ is:</p>
 <p>Note that if one of the latter arguments is <em>not</em> an interval treeset then
 it will simply be merged with
 <a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/conj"><code>conj</code></a>.</p>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support efficient merging&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support efficient merging&quot;
   (it/union (ts [1 2] [3 4])
             (ts [5 6] [7 8]))           =&gt; [[1 2] [3 4] [5 6] [7 8]]
 
@@ -3156,26 +3188,26 @@ it will simply be merged with
             (ts [3 4] [7 8]))           =&gt; [[1 2] [3 4] [7 8]]
 
   (it/union (ts [1 2] [7 10] [7 8])
-            (ts [3 4] [7 8]))           =&gt; [[1 2] [3 4] [7 8] [7 10]]
+            (ts [3 4] [7 8]))           =&gt; [[1 2] [3 4] [7 10] [7 8]]
 
   (it/union (ts [3 4] [7 8])
-            (ts [1 2] [7 10] [7 8]))    =&gt; [[1 2] [3 4] [7 8] [7 10]]
+            (ts [1 2] [7 10] [7 8]))    =&gt; [[1 2] [3 4] [7 10] [7 8]]
 
   (it/union (ts [1 2] [7 8])
-            (ts [1 2] [7 10] [7 8]))    =&gt; [[1 2] [7 8] [7 10]]
+            (ts [1 2] [7 10] [7 8]))    =&gt; [[1 2] [7 10] [7 8]]
 
   (it/union (ts [0 2] [1 2] [7 8])
-            (ts [1 2] [7 10] [7 8]))    =&gt; [[0 2] [1 2] [7 8] [7 10]])</pre></td></tr><tr><td class="docs"><p><a href="../codox/org.dthume.data.interval-treeset.html#var-intersection"><code>intersection</code></a>
+            (ts [1 2] [7 10] [7 8]))    =&gt; [[0 2] [1 2] [7 10] [7 8]])</pre></td></tr><tr><td class="docs"><p><a href="../codox/org.dthume.data.interval-treeset.html#var-intersection"><code>intersection</code></a>
 is currently using a naive implementation (the default
 from
 <a href="http://clojure.github.io/clojure/clojure.set-api.html"><code>clojure.set</code></a>).</p>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support intersections&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support intersections&quot;
   (it/intersection (ts [1 2] [3 4])
                    (ts [3 4] [5 6]))    =&gt; [[3 4]])</pre></td></tr><tr><td class="docs"><p><a href="../codox/org.dthume.data.interval-treeset.html#var-difference"><code>difference</code></a>
 is also currently using a naive implementation (the default
 from
 <a href="http://clojure.github.io/clojure/clojure.set-api.html"><code>clojure.set</code></a>).</p>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support differences&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support differences&quot;
   (it/difference (ts [1 2] [3 4])
                  (ts [3 4] [5 6]))      =&gt; [[1 2]])</pre></td></tr><tr><td class="docs"><p>Lookup of the first overlapping item, as described in the original paper</p>
 
@@ -3183,7 +3215,7 @@ from
 <li><a href="../codox/org.dthume.data.interval-treeset.html#var-first-overlapping"><code>first-overlapping</code></a>
 is O(log(n)).</li>
 </ul>
-</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval trees support lookup of overlapping items&quot;
+</td><td class="codes"><pre class="brush: clojure">(fact &quot;Interval treesets support lookup of overlapping items&quot;
   (it/first-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
    [3 6])                               =&gt; [3 4]
@@ -3194,7 +3226,7 @@ is O(log(n)).</li>
         {:span [11 21]}
         {:span [16 21]}
         {:span [22 25]})
-   [11 21])                             =&gt; {:span [11 15]})</pre></td></tr><tr><td class="docs"><h2>Selections</h2>
+   [11 21])                             =&gt; {:span [11 21]})</pre></td></tr><tr><td class="docs"><h2>Selections</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Here we introduce selection regions, which are a partitioning of the
 set around a particular subset of consecutive items.
 Selection regions are indexed sequences of 3 items:
@@ -3205,7 +3237,8 @@ namespace to work with selection regions.</p>
 </td><td class="codes"><pre class="brush: clojure">(fact &quot;Treesets can be partitioned around selection regions&quot;
   (it/select-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
-   [3 6])                               =&gt; [[[1 2]]
+   [3 6])               
+                =&gt; [[[1 2]]
                                             [[3 4] [5 6]]
                                             [[7 8]]])</pre></td></tr><tr><td class="docs"><p>Each component of a selection region acts as a window, and can be operated
 on individually, but the <code>selected</code> component acts as the "primary"
@@ -3269,14 +3302,15 @@ set number of times:
 
   (-&gt; (cts {:span [0 5]   :key :a}
            {:span [6 10]  :key :b}
-           {:span [11 15] :key :c}
-           {:span [11 21] :key :d}
+           {:span [11 15] :key :d}
+           {:span [11 21] :key :c}
            {:span [16 21] :key :e}
            {:span [22 25] :key :f})
       (it/select-overlapping [6 10])
-      (sel/expandr-while #(not= :d (:key %)))
+      (sel/expandr-while #(not= :e (:key %)))
       (sel/selected))                   =&gt; [{:span [6 10] :key :b}
-                                            {:span [11 15] :key :c}])</pre></td></tr><tr><td class="docs"><p>Components of a selection region can be individually transformed using
+                                            {:span [11 21] :key :c}
+                                            {:span [11 15] :key :d}])</pre></td></tr><tr><td class="docs"><p>Components of a selection region can be individually transformed using
 the
 <a href="../codox/org.dthume.data.interval-treeset.selection.html#var-edit"><code>edit</code></a>
 and
