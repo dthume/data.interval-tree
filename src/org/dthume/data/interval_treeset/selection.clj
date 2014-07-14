@@ -4,7 +4,8 @@
   (:require [clj-tuple :refer (tuple)]
             [clojure.core.reducers :as r]
             [clojure.data.finger-tree :as ft]
-            [org.dthume.data.interval-treeset :as it])
+            [org.dthume.data.interval-treeset :as it]
+            [org.dthume.data.set :as set])
   (:import [org.dthume.data.interval_treeset IntervalTreeSet]))
 
 (defn- with-tree
@@ -295,7 +296,7 @@ treeset."
   [t]
   (clojure.core/->> t
                     (filter identity)
-                    (apply it/union)))
+                    (apply set/union)))
 
 (defn overlapping-subset
   "Search `this` for all values which overlap `ival`."

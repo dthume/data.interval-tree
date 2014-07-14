@@ -10,7 +10,8 @@
 (ns org.dthume.data.test-interval-treeset
   (:require [midje.sweet :refer :all]
             [org.dthume.data.interval-treeset :as it]
-            [org.dthume.data.interval-treeset.selection :as sel]))
+            [org.dthume.data.interval-treeset.selection :as sel]
+            [org.dthume.data.set :as set]))
 
 ;; ## Utilities
 
@@ -85,7 +86,19 @@
 
   (contains? (ts [1 2] [3 4]) [1 2])    => true
 
-  (contains? (ts [1 2] [3 4]) [1 3])    => false)
+  (contains? (ts [1 2] [3 4]) [1 3])    => false
+
+  (subseq (ts [1 2] [3 4] [5 6] [7 8])
+          > [3 4])                      => [[5 6] [7 8]]
+
+  (subseq (ts [1 2] [3 4] [5 6] [7 8])
+          < [5 6])                      => [[1 2] [3 4]]
+
+  (subseq (ts [1 2] [3 4] [5 6] [7 8])
+          <= [3 4])                     => [[1 2] [3 4]]
+
+  (subseq (ts [1 2] [3 4] [5 6] [7 8])
+          >= [5 6])                     => [[5 6] [7 8]])
 
 ;; Interval treesets are equally efficient at either end:
 ;;
@@ -158,51 +171,51 @@
 ;; it will simply be merged with
 ;; [`conj`](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/conj).
 (fact "Interval treesets support efficient merging"
-  (it/union (ts [1 2] [3 4])
-            (ts [5 6] [7 8]))           => [[1 2] [3 4] [5 6] [7 8]]
+  (set/union (ts [1 2] [3 4])
+             (ts [5 6] [7 8]))           => [[1 2] [3 4] [5 6] [7 8]]
 
-  (it/union (ts [1 2] [5 6])
-            (ts [3 4] [7 8]))           => [[1 2] [3 4] [5 6] [7 8]]
+  (set/union (ts [1 2] [5 6])
+             (ts [3 4] [7 8]))           => [[1 2] [3 4] [5 6] [7 8]]
 
-  (it/union (ts [1 2] [3 4])
-            (ts [3 4] [7 8]))           => [[1 2] [3 4] [7 8]]
+  (set/union (ts [1 2] [3 4])
+             (ts [3 4] [7 8]))           => [[1 2] [3 4] [7 8]]
 
-  (it/union (ts [1 2] [7 10] [7 8])
-            (ts [3 4] [7 8]))           => [[1 2] [3 4] [7 10] [7 8]]
+  (set/union (ts [1 2] [7 10] [7 8])
+             (ts [3 4] [7 8]))           => [[1 2] [3 4] [7 10] [7 8]]
 
-  (it/union (ts [3 4] [7 8])
-            (ts [1 2] [7 10] [7 8]))    => [[1 2] [3 4] [7 10] [7 8]]
+  (set/union (ts [3 4] [7 8])
+             (ts [1 2] [7 10] [7 8]))    => [[1 2] [3 4] [7 10] [7 8]]
 
-  (it/union (ts [1 2] [7 8])
-            (ts [1 2] [7 10] [7 8]))    => [[1 2] [7 10] [7 8]]
+  (set/union (ts [1 2] [7 8])
+             (ts [1 2] [7 10] [7 8]))    => [[1 2] [7 10] [7 8]]
 
-  (it/union (ts [0 2] [1 2] [7 8])
-            (ts [1 2] [7 10] [7 8]))    => [[0 2] [1 2] [7 10] [7 8]])
+  (set/union (ts [0 2] [1 2] [7 8])
+             (ts [1 2] [7 10] [7 8]))    => [[0 2] [1 2] [7 10] [7 8]])
 
 ;; [`intersection`](../codox/org.dthume.data.interval-treeset.html#var-intersection)
 ;; is currently using a naive implementation (the default
 ;; from
 ;; [`clojure.set`](http://clojure.github.io/clojure/clojure.set-api.html)).
 (fact "Interval treesets support intersections"
-  (it/intersection (ts [1 2] [3 4])
-                   (ts [3 4] [5 6]))    => [[3 4]])
+  (set/intersection (ts [1 2] [3 4])
+                    (ts [3 4] [5 6]))    => [[3 4]])
 
 ;; [`difference`](../codox/org.dthume.data.interval-treeset.html#var-difference)
 ;; is also currently using a naive implementation (the default
 ;; from
 ;; [`clojure.set`](http://clojure.github.io/clojure/clojure.set-api.html)).
 (fact "Interval treesets support differences"
-  (it/difference (ts [1 2] [3 4])
-                 (ts [3 4] [5 6]))      => [[1 2]]
+  (set/difference (ts [1 2] [3 4])
+                  (ts [3 4] [5 6]))      => [[1 2]]
 
-  (it/difference (ts [1 2] [3 4])
-                 (ts [1 2] [5 6]))      => [[3 4]]
+  (set/difference (ts [1 2] [3 4])
+                  (ts [1 2] [5 6]))      => [[3 4]]
 
-  (it/difference (ts [1 2] [3 4])
-                 (ts [1 2] [3 4]))      => []
+  (set/difference (ts [1 2] [3 4])
+                  (ts [1 2] [3 4]))      => []
 
-  (it/difference (ts [1 2] [3 4])
-                 (ts [5 6] [7 8]))      => [[1 2] [3 4]])
+  (set/difference (ts [1 2] [3 4])
+                  (ts [5 6] [7 8]))      => [[1 2] [3 4]])
 
 ;; Lookup of the first overlapping item, as described in the original paper
 ;; 
@@ -339,7 +352,7 @@
   (fact "Edit passes the component as the first arg to f"
    (-> (ts [1 2] [3 4] [5 6] [7 8])
        (it/select-overlapping [5 6])
-       (sel/edit sel/prefix it/intersection
+       (sel/edit sel/prefix set/intersection
                  (ts [1 2] [9 10]))
        (sel/unselect))                   => [[1 2] [5 6] [7 8]])
 
@@ -396,8 +409,8 @@
     (-> (ts [1 2] [3 4] [5 6] [7 8])
         (it/select-overlapping [5 6])
         (sel/-> sel/prefix
-                (it/intersection (ts [1 2]))
-                (it/union (ts [0 1])))
+                (set/intersection (ts [1 2]))
+                (set/union (ts [0 1])))
         (sel/unselect))                   => [[0 1] [1 2] [5 6] [7 8]])
 
   (fact "->> is analagous to clojure.core/->>"
@@ -412,6 +425,6 @@
     (-> (ts [1 2] [3 4] [5 6] [7 8])
         (it/select-overlapping [3 6])
         (sel/as-> sel/selected x
-          (it/intersection x (ts [3 4] [4 5]))
+          (set/intersection x (ts [3 4] [4 5]))
           (map (shiftt + 1) x))
         (sel/unselect))                   => [[1 2] [4 5] [7 8]]))

@@ -33,7 +33,11 @@
    :site {}}
 
   :aliases
-  {"dev-bench"
+  {"ci-build"
+   ^{:doc "Perform the Continuous Integration build"}
+   ["do" ["clean"] ["check"] ["midje"]]
+   
+   "dev-bench"
    ^{:doc "Run development benchmarks"}
    ["with-profile" "benchmark" "perforate"]
 
