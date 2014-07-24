@@ -34,40 +34,38 @@ the interval which they occupy."}
 
 (def ^:private notfound (Object.))
 
-(defrecord IntervalMeasure [^long length ival])
+(deftype IntervalMeasure [^long length start end])
 
 (no-codox! #'->IntervalMeasure)
-(no-codox! #'map->IntervalMeasure)
 
-(defn- interval-measure
-  [l ival]
-  (->IntervalMeasure l ival))
+(definline ^:private interval-measure
+  [l start end]
+  `(->IntervalMeasure ~l ~start ~end))
 
 (defn interval
   "Create an interval with range `s` to `e`"
   [s e]
   (tuple s e))
 
-(defn- ival-length ^long
+(definline ^:private ival-length
   [^IntervalMeasure i]
-  (.length i))
+  `(.length ~i))
 
-(let [ks (tuple :ival 0)]
-  (defn- ival-start
-    [i]
-    (-> i (get :ival) (nth 0))))
+(definline ^:private ival-start
+  [^IntervalMeasure i]
+  `(.start ~i))
 
-(let [ks (tuple :ival 1)]
-  (defn- ival-end
-    [i]
-    (-> i (get :ival) (nth 1))))
+(definline ^:private ival-end
+  [^IntervalMeasure i]
+  `(.end ~i))
 
-(defn- split-tree-key-op
-  [pred? compare-point tree k]
-  (ft/split-tree tree #(pred? (compare-point k (ival-start %)))))
-
-(def ^:private split-tree-key>=
-  (partial split-tree-key-op #(>= 0 %)))
+(definline ^:private split-tree-key>=
+  [compare-point tree k]
+  `(ft/split-tree ~tree #(->> ^IntervalMeasure %
+                              ival-start
+                              (~compare-point ~k)
+                              pos?
+                              not)))
 
 (defprotocol IPersistentIntervalSet
   (covered-range* [this] "Return the covered range (i.e. min start and max
@@ -87,11 +85,11 @@ resulting selection."))
 
 (defn- it-at-least
   [compare-point x]
-  #(<= 0 (compare-point (ival-end %) x)))
+  #(<= 0 (compare-point (ival-end ^IntervalMeasure %) x)))
 
 (defn- it-greater
   [compare-point x]
-  #(pos? (compare-point (ival-start %) x)))
+  #(pos? (compare-point (ival-start ^IntervalMeasure %) x)))
 
 (declare ^:private with-tree)
 (declare ^:private it-union)
@@ -115,7 +113,6 @@ resulting selection."))
     (withMeta [_ mdata]
       (IntervalTreeSet. as-interval compare-point tree mdata))
   Seqable
-    ; return 'tree' instead of 'this' so that result will be Sequential
     (seq [this] (when (seq tree) tree))
   IPersistentCollection
     (cons [this value]
@@ -170,7 +167,8 @@ resulting selection."))
        (tuple (empty this) notfound this)
        
        (< n (count this))
-       (let [[l x r] (ft/split-tree tree #(> (ival-length %) n))]
+       (let [[l x r] (ft/split-tree tree #(> (ival-length ^IntervalMeasure %)
+                                             n))]
          (tuple (with-tree this l)
                 x
                 (with-tree this r)))
@@ -185,7 +183,8 @@ resulting selection."))
     (app3deep [this ts t1]
       (with-tree this (ft/app3deep tree ts t1)))
   Counted
-    (count [_] (:length (ft/measured tree)))
+    (count [_] (let [^IntervalMeasure im (ft/measured tree)]
+                 (.length im)))
   ILookup
     (valAt [_ k notfound]
       (let [ki      (as-interval k)
@@ -230,13 +229,15 @@ resulting selection."))
     (get [this k] (.valAt this k nil))
   Indexed
     (nth [this n notfound]
-      (if (< -1 n (ival-length (ft/measured tree)))
-        (nth (ft/split-tree tree #(> (ival-length %) n)) 1)
-        notfound))
+      (let [tm ^IntervalMeasure (ft/measured tree)]
+        (if (< -1 n (ival-length tm))
+          (nth (ft/split-tree tree #(> (ival-length ^IntervalMeasure %) n)) 1)
+          notfound)))
     (nth [this n]
-      (if (< -1 n (ival-length (ft/measured tree)))
-        (nth (ft/split-tree tree #(> (ival-length %) n)) 1)
-        (throw (IndexOutOfBoundsException.))))
+      (let [tm ^IntervalMeasure (ft/measured tree)]
+        (if (< -1 n (ival-length tm))
+          (nth (ft/split-tree tree #(> (ival-length ^IntervalMeasure %) n)) 1)
+          (throw (IndexOutOfBoundsException.)))))
   Sorted
     (comparator [_]
       (reify java.util.Comparator
@@ -262,9 +263,10 @@ resulting selection."))
     (iterator [_]
       (let [t (atom tree)]
         (reify java.util.Iterator
-          (next [_] (let [f (first @t)]
-                      (swap! t next)
-                      f))
+          (next [_] (if-let [f (first @t)]
+                      (do (swap! t next)
+                          f)
+                      (throw (java.util.NoSuchElementException.))))
           (hasNext [_] (boolean (first @t))))))
     (size [this] (count this))
     (toArray [_] nil)
@@ -280,17 +282,19 @@ resulting selection."))
     (covered-range* [this]
       (if (empty? tree)
         nil 
-        (let [start (-> this first as-interval (nth 0))
-              end (-> this ft/measured ival-end)]
+        (let [start                (-> this first as-interval (nth 0))
+              ^IntervalMeasure em  (-> this ft/measured)
+              end                  (ival-end em)]
           (tuple start end))))
     (first-overlapping* [this ival]
       (first-overlapping* this ival nil))
     (first-overlapping* [this ival n-f]
       (let [[ik ip] ival
-            [l x r] (ft/split-tree tree (it-at-least compare-point ik))]
-         (if (>= 0 (compare-point (ival-start x) ip))
-           x
-           n-f)))
+            [l x r] (ft/split-tree tree (it-at-least compare-point ik))
+            [xs xe] (as-interval x)]
+        (if (>= 0 (compare-point xs ip))
+          x
+          n-f)))
     (select-overlapping* [this ival]
       (let [[ik ip] ival
             [l x r] (ft/split-tree tree (it-greater compare-point ip))
@@ -299,7 +303,7 @@ resulting selection."))
                       (tuple (conj l x) r)
                       (tuple l (ft/conjl r x)))]
         (if (empty? rs)
-          (tuple (empty this) (empty this) rr)
+          (tuple (empty this) (empty this) (with-tree this rr))
           (let [[l2 x2 r2] (ft/split-tree rs (it-at-least compare-point ik))]
             (tuple (with-tree this l2)
                    (with-tree this (ft/conjl r2 x2))
@@ -434,36 +438,13 @@ avoid the dispatch overhead of `difference`."
    :else
    (let [rf                     (peek res)
          [rfs rfe]              (as-interval rf)
-         =rfs                   #(not= rfs (ival-start %))
+         =rfs                   #(not= rfs (ival-start ^IntervalMeasure %))
          [bl x br]              (ft/split-tree bs =rfs)
          ^IntervalTreeSet new-t (-> (with-tree this res)
                                     (into bl)
                                     (conj x))
          new-t                  (-> new-t .tree (ft/ft-concat br))]
      (with-tree this new-t))))
-
-(defn- union-recur
-  [as-interval compare-point res as bs]
-  (let [[bf & br] bs
-        [bfs bfe] (as-interval bf)
-        [l x r]   (split-tree-key>= compare-point as bfs)
-        [xs xe]   (as-interval x)
-        [l r]     (if (and (empty? r) (pos? (compare-point bfs xs)))
-                    (tuple (conj l x) r)
-                    (tuple l (ft/conjl r x)))
-        existing? (loop [ls res]
-                    (when-let [ll (peek ls)]
-                      (when (as-> ll x
-                                  (as-interval x)
-                                  (nth x 0)
-                                  (compare-point bfs x)
-                                  (zero? x))
-                        (if (= bf ll)
-                          true
-                          (recur (pop ls))))))
-        new-res (cond-> (ft/ft-concat res l)
-                  (not existing?) (conj bf))] 
-    (tuple new-res br r)))
 
 (defn it-union*
   "Specific union for two interval treesets. Public so clients who
@@ -481,8 +462,25 @@ of `union`."
        (union-result lhs as-interval res as)
        
        :else
-       (let [[new-res br r]
-             (union-recur as-interval compare-point res as bs)]
+       (let [[bf & br] bs
+             bfs       (nth (as-interval bf) 0)
+             [l x r]   (split-tree-key>= compare-point as bfs)
+             xs        (nth (as-interval x) 0)
+             [l r]     (if (and (empty? r) (pos? (compare-point bfs xs)))
+                         (tuple (conj l x) r)
+                         (tuple l (ft/conjl r x)))
+             existing? (loop [ls res]
+                         (when-let [ll (peek ls)]
+                           (when (as-> ll x
+                                       (as-interval x)
+                                       (nth x 0)
+                                       (compare-point bfs x)
+                                       (zero? x))
+                             (if (= bf ll)
+                               true
+                               (recur (pop ls))))))
+             new-res (cond-> (ft/ft-concat res l)
+                       (not existing?) (conj bf))] 
          (recur new-res br r))))))
 
 (defn it-union
@@ -500,16 +498,18 @@ avoid the dispatch overhead of `union`."
     (let [le (ival-end l) re (ival-end r)]
       (interval-measure
        (+ (.length l) (.length r))
-       (interval (or (ival-start r) (ival-start l))
-                 (cond
-                  (nil? le)                     re
-                  (nil? re)                     le
-                  (pos? (compare-point le re))  le
-                  :else                         re))))))
+       (or (ival-start r) (ival-start l))
+       (cond
+        (nil? le)                     re
+        (nil? re)                     le
+        (pos? (compare-point le re))  le
+        :else                         re)))))
 
 (defrecord ^:private IntervalMeter [as-interval idElem compare-point]
   ft/ObjMeter
-  (measure [_ a] (interval-measure 1 (as-interval a)))
+  (measure [_ a]
+    (let [i (as-interval a)]
+      (interval-measure 1 (nth i 0) (nth i 1))))
   (idElem [_] idElem)
   (opfn [_] (combine-interval-meters compare-point)))
 
@@ -537,20 +537,21 @@ avoid the dispatch overhead of `union`."
          :or {as-interval identity
               compare-point compare
               zero-interval (interval nil Integer/MIN_VALUE)}} conf
-              combine-intervals
-              (fn [^IntervalMeasure l ^IntervalMeasure r]
-                (let [le (ival-end l) re (ival-end r)]
-                  (interval-measure
-                   (+ (.length l) (.length r))
-                   (interval (or (ival-start r) (ival-start l))
-                             (cond
-                              (nil? le)                     re
-                              (nil? re)                     le
-                              (pos? (compare-point le re))  le
-                              :else                         re)))))
-              interval-meter (interval-meter compare-point as-interval
-                                             (interval-measure 0 zero-interval))
-              empty-tree (ft/->EmptyTree interval-meter)]
+        [zs ze] zero-interval
+        combine-intervals
+        (fn [^IntervalMeasure l ^IntervalMeasure r]
+          (let [le (ival-end l) re (ival-end r)]
+            (interval-measure
+             (+ (.length l) (.length r))
+             (or (ival-start r) (ival-start l))
+             (cond
+              (nil? le)                     re
+              (nil? re)                     le
+              (pos? (compare-point le re))  le
+              :else                         re))))
+        interval-meter (interval-meter compare-point as-interval
+                                       (interval-measure 0 ze ze))
+        empty-tree (ft/->EmptyTree interval-meter)]
     (IntervalTreeSet. as-interval compare-point empty-tree nil)))
 
 (defn covered-range
