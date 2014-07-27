@@ -488,17 +488,6 @@ of `union`."
                  [l r]     (if (and (empty? r) (pos? (compare-point bfs xs)))
                              (tuple (conj l x) r)
                              (tuple l (ft/conjl r x)))
-                 ;; existing? (loop [ls res]
-                 ;;             (when-let [ll (peek ls)]
-                 ;;               (when (as-> ll x
-                 ;;                           (interval-start x)
-                 ;;                           (compare-point bfs x)
-                 ;;                           (zero? x))
-                 ;;                 (if (= bf ll)
-                 ;;                   true
-                 ;;                   (recur (pop ls))))))
-                 ;; new-res (cond-> (ft/ft-concat res l)
-                 ;;           (not existing?) (conj bf))
                  new-res (conj (ft/ft-concat res l) bf)] 
              (recur new-res br r))))))))
 
