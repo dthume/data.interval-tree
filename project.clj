@@ -50,7 +50,7 @@
    ["do" ["clean"] ["midje"]]
 
    "dev-doc"
-   ^{:doc "Start a clean development NREPL session"}
+   ^{:doc "Generate project documentation"}
    ["with-profile" "site"
     ["do"
      ["clean"]

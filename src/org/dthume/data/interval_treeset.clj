@@ -101,6 +101,7 @@ resulting selection."))
 (declare ^:private it-difference)
 
 (deftype IntervalTreeSet [as-interval compare-point tree mdata]
+  Sequential
   Object
     (equals [_ x]
       (boolean

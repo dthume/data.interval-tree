@@ -18,7 +18,7 @@
 ;; A basic transformation function for use in update tests.
 ;; For brevity the majority of our examples will simply use sets or raw
 ;; intervals rather than using a custom interval lens, and this gives
-;; us an easy to read way of illustrating transformations over the one or
+;; us an easy to read way of illustrating transformations over one or
 ;; more of the values contained in a set.
 (defn- shiftt
   [op x]
