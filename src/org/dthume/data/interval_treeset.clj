@@ -274,7 +274,7 @@ resulting selection."))
           (hasNext [_] (boolean (first @t))))))
     (size [this] (count this))
     (toArray [this]
-      (to-array (seq this)))
+      (to-array (seq tree)))
     (toArray [this a]
       (.toArray ^java.util.Collection (vec this) a))
   java.util.SortedSet
