@@ -219,17 +219,17 @@ resulting selection."))
           (if (= x k)
             (with-tree this (ft/ft-concat l r))
             (loop [curr (first r)
-                   rem  (next r)
+                   rem  (rest r)
                    res  (conj l x)]
               (cond
                (= curr k)
-               (with-tree this (ft/ft-concat res rem))
+               (with-tree this (if (seq rem) (ft/ft-concat res rem) res))
                
                (or (nil? curr) (-> curr interval-start (not= ks)))
                this
                
                :else
-               (recur (first rem) (next rem) (conj l curr))))))))
+               (recur (first rem) (rest rem) (conj l curr))))))))
     (get [this k] (.valAt this k nil))
   Indexed
     (nth [this n notfound]
