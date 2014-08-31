@@ -238,7 +238,8 @@
         {:span [22 25]})
    [11 21])                             => {:span [11 21]})
 
-
+(fact "Interval treesets are `java.util.Set` instances"
+  (seq (.toArray (ts [1 2] [3 4])))     => [[1 2] [3 4]])
 
 ;; ## Selections
 

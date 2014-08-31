@@ -274,9 +274,9 @@ resulting selection."))
           (hasNext [_] (boolean (first @t))))))
     (size [this] (count this))
     (toArray [this]
-      (to-array (seq tree)))
+      (clojure.lang.RT/seqToArray tree))
     (toArray [this a]
-      (.toArray ^java.util.Collection (vec this) a))
+      (clojure.lang.RT/seqToPassedArray tree a))
   java.util.SortedSet
   (last [this]
     (peek this))
@@ -294,6 +294,7 @@ resulting selection."))
         (.headSet f)))
   (tailSet [this e]
     (.seqFrom this e true))
+
   set-p/SetAlgebra
   (set-union [this rhs]
     (it-union this rhs))
