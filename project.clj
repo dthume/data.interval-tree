@@ -1,4 +1,4 @@
-(defproject org.dthume/data.interval-treeset "0.1.0-SNAPSHOT"
+(defproject org.dthume/data.interval-treeset "0.1.1-SNAPSHOT"
   :description "Interval Treeset based on finger trees."
 
   :plugins [[codox "0.8.9"]
