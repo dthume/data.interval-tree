@@ -273,8 +273,27 @@ resulting selection."))
                       (throw (java.util.NoSuchElementException.))))
           (hasNext [_] (boolean (first @t))))))
     (size [this] (count this))
-    (toArray [_] nil)
-    (toArray [_ a] nil)
+    (toArray [this]
+      (to-array (seq this)))
+    (toArray [this a]
+      (.toArray ^java.util.Collection (vec this) a))
+  java.util.SortedSet
+  (last [this]
+    (peek this))
+  (headSet [this k]
+    (let [[ks ke] (as-interval k)
+          [l x r] (split-tree-key>= compare-point tree ks)
+          x<k?    (and (empty? r)
+                       (some-> x interval-start (compare-point ks) neg?))]
+      (if x<k?
+        (with-tree this (conj l x))
+        (with-tree this l))))
+  (subSet [this f t]
+    (-> this
+        (.tailSet t)
+        (.headSet f)))
+  (tailSet [this e]
+    (.seqFrom this e true))
   set-p/SetAlgebra
   (set-union [this rhs]
     (it-union this rhs))
