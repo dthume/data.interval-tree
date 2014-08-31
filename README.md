@@ -6,13 +6,10 @@ Largely based on the implementation described in the
 [original paper](http://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf).
 
 [![Build Status](https://travis-ci.org/dthume/data.interval-tree.svg?branch=master)](https://travis-ci.org/dthume/data.interval-tree)
-[![Clojars Project](http://clojars.org/org.dthume/data.interval-treeset/latest-version.svg)]
 
 ## Leiningen
 
-```clojure
-[org.dthume/data.interval-treeset "0.1.1-SNAPSHOT"]
-```
+[![Clojars Project](http://clojars.org/org.dthume/data.interval-treeset/latest-version.svg)]
 
 ## API Docs
 
