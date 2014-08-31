@@ -198,7 +198,11 @@
 ;; [`clojure.set`](http://clojure.github.io/clojure/clojure.set-api.html)).
 (fact "Interval treesets support intersections"
   (set/intersection (ts [1 2] [3 4])
-                    (ts [3 4] [5 6]))    => [[3 4]])
+                    (ts [3 4] [5 6]))    => [[3 4]]
+
+  (set/intersection (ts [1 2] [3 4] [5 6] [7 8] [9 10])
+                    (ts [3 4] [7 8]))    => [[3 4] [7 8]]
+  )
 
 ;; [`difference`](../codox/org.dthume.data.interval-treeset.html#var-difference)
 ;; is also currently using a naive implementation (the default

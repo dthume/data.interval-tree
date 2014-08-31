@@ -366,23 +366,23 @@ of `intersection`."
     (loop [res (empty (.tree a)) a (.tree a) b (.tree b)]
       (if (or (empty? a) (empty? b))
         (with-tree lhs res)
-        (let [bf (first b)
+        (let [bf        (first b)
               [bfs bfe] (as-interval bf)
-              [l x r] (split-tree-key>= compare-point a bfs)]
+              [l x r]   (split-tree-key>= compare-point a bfs)]
           (if (= x bf)
             (recur (conj res x) (rest b) r)
             (if-let [remaining
-                     (loop [p (empty r) c r]
-                         (when (some? c)
+                     (loop [p (conj (empty r) x) c r]
+                         (when (seq c)
                            (let [cf (first c)]
                              (when (and cf (-> cf
                                                interval-start
                                                (compare-point bfs)
                                                zero?))
                                (if (= cf bf) (ft/ft-concat p (rest c))
-                                   (recur (conj p cf) (next c)))))))]
+                                   (recur (conj p cf) (rest c)))))))]
               (recur (conj res bf) (rest b) remaining)
-              (recur res (rest b) r))))))))
+              (recur res (rest b) (ft/conjl r x)))))))))
 
 (defn it-intersection
   "Specific intersection for an interval treeset with any other set type.
