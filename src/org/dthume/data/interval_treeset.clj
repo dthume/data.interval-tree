@@ -330,10 +330,20 @@ resulting selection."))
                         (tuple l (ft/conjl r x)))]
           (if (empty? rs)
             (tuple (empty this) (empty this) (with-tree this rr))
-            (let [[l2 x2 r2] (ft/split-tree rs (it-at-least compare-point ik))]
-              (tuple (with-tree this l2)
-                     (with-tree this (ft/conjl r2 x2))
-                     (with-tree this rr)))))))
+            (loop [prefix     (empty tree)
+                   covered    (empty tree)
+                   [l2 x2 r2] (ft/split-tree rs (it-at-least compare-point ik))]
+              (let [prefix           (ft/ft-concat prefix l2)
+                    [x2s x2e]        (as-interval x2)
+                    [prefix covered] (if (neg? (compare-point ip x2s))
+                                       (tuple (conj prefix x2) covered)
+                                       (tuple prefix (conj covered x2)))]
+                (if (empty? r2)
+                  (tuple (with-tree this prefix)
+                         (with-tree this covered)
+                         (with-tree this rr))
+                  (recur prefix covered
+                         (ft/split-tree r2 (it-at-least compare-point ik))))))))))
     (select* [this k]
       (let [ki      (as-interval k)
             [ks ke] ki
@@ -370,6 +380,28 @@ resulting selection."))
                     (.compare-point base)
                     tree
                     (.mdata base)))
+
+  ;; [l x r] = (split-tree it k)
+  ;; prefix  = (concat prefix l)
+  ;; if l is empty:
+  ;;   
+  ;; if r is empty:
+  ;;   if x is covered
+  ;;     [prefix (conj covered x) []]
+  ;;   else if x < k
+  ;;     [(conj prefix x) covered []]
+  ;;   else if x > k
+  ;;     [prefix covered [x]]
+  ;; else
+  ;;   covered = (conj covered x)
+  ;;   it = r
+  ;;   recur
+
+(defn partition-around
+  [it k]
+  (case (count it)
+    0 (tuple (empty it) (empty it) (empty it))
+    1 ))
 
 (defn it-intersection*
   "Specific intersection for two interval treesets. Public so clients who

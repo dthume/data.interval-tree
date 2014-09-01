@@ -8,13 +8,6 @@
             [org.dthume.data.set :as set])
   (:import [org.dthume.data.interval_treeset IntervalTreeSet]))
 
-(defn- with-tree
-  [^IntervalTreeSet base tree]
-  (IntervalTreeSet. (.as-interval base)
-                    (.compare-point base)
-                    tree
-                    (.mdata base)))
-
 (defn selection
   "Create a selection from 3 trees: `pre`fix `sel`ected and `suff`ix."
   [pre sel suff]
@@ -139,23 +132,19 @@ component part value."
   "Expand the covered region to the left until `pred` has returned logical
 `true` `n` times."
   [t pred n]
-  (loop [p (.tree (prefix t)) r (.tree (selected t)) n n]
+  (loop [p (prefix t) r (selected t) n n]
     (if (or (empty? p) (zero? n))
-      (tuple (with-tree (prefix t) p)
-             (with-tree (selected t) r)
-             (suffix t))
-      (recur (pop p) (ft/conjl r (peek p))
+      (tuple p r (suffix t))
+      (recur (pop p) (conj r (peek p))
              (if (pred (peek p)) (dec n) n)))))
 
 (defn expandl-while
   "Expand the covered region to the left while `pred` returns logical `true`."
   [t pred]
-  (loop [p (.tree (prefix t)) r (.tree (selected t))]
+  (loop [p (prefix t) r (selected t)]
     (if (or (empty? p) (pred (peek p)))
-      (tuple (with-tree (prefix t) p)
-             (with-tree (selected t) r)
-             (suffix t))
-      (recur (pop p) (ft/conjl r (peek p))))))
+      (tuple p r (suffix t))
+      (recur (pop p) (conj r (peek p))))))
 
 (defn expandl
   "Expand the covered region to the left by `n` items."
@@ -166,23 +155,19 @@ component part value."
   "Contract the covered region to the right until `pred` has returned logical
 `true` `n` times."
   [t pred n]
-  (loop [r (.tree (selected t)) s (.tree (suffix t)) n n]
+  (loop [r (selected t) s (suffix t) n n]
     (if (or (empty? r) (zero? n))
-      (tuple (prefix t)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) s))
-      (recur (pop r) (ft/conjl s (peek r))
+      (tuple (prefix t) r s)
+      (recur (pop r) (conj s (peek r))
              (if (pred (peek r)) (dec n) n)))))
 
 (defn contractr-while
   "Contract the covered region to the right while `pred` returns logical true."
   [t pred]
-  (loop [r (.tree (selected t)) s (.tree (selected t))]
+  (loop [r (selected t) s (selected t)]
     (if (or (empty? r) (pred (peek r)))
-      (tuple (prefix t)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) s))
-      (recur (pop r) (ft/conjl s (peek r))))))
+      (tuple (prefix t) r s)
+      (recur (pop r) (conj s (peek r))))))
 
 (defn contractr
   "Contract the covered region to the right by `n` items."
@@ -193,24 +178,20 @@ component part value."
   "Expand the covered region to the right until `pred` has evaluated to logical
 `true` `n` times."
   [t pred n]
-  (loop [r (.tree (selected t)) ss (.tree (suffix t)) n n]
+  (loop [r (selected t) ss (suffix t) n n]
     (if (and (some? ss) (pos? n))
       (let [s (first ss)]
         (recur (conj r s) (next ss)
                (if (pred s) (dec n) n)))
-      (tuple (prefix t)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) ss)))))
+      (tuple (prefix t) r ss))))
 
 (defn expandr-while
   "Expand the covered region to the right while `pred` evaluates to logical
 `true`"
   [t pred]
-  (loop [r (.tree (selected t)) ss (.tree (suffix t))]
+  (loop [r (selected t) ss (suffix t)]
     (if (or (empty? ss) (not (pred (first ss))))
-      (tuple (prefix t)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) ss))
+      (tuple (prefix t) r ss)
       (recur (conj r (first ss)) (next ss)))))
 
 (defn expandr
@@ -222,32 +203,28 @@ component part value."
   "Slide the covered region left unti `pred` has returned logical `true`
 `n` times."
   [t pred n]
-  (loop [p (.tree (prefix t))
-         r (.tree (selected t))
-         s (.tree (suffix t))
+  (loop [p (prefix t)
+         r (selected t)
+         s (suffix t)
          n n]
     (if (or (empty? p) (zero? n))
-      (tuple (with-tree (prefix t) p)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) s))
+      (tuple p r s)
       (recur (pop p)
-             (clojure.core/-> r (ft/conjl (peek p)) pop)
-             (ft/conjl (peek r) s)
+             (clojure.core/-> r (conj (peek p)) pop)
+             (conj (peek r) s)
              (if (pred (peek p)) (dec n) n)))))
 
 (defn slide-left-while
   "Slide the covered region left while `pred` returns logical `true`."
   [t pred]
-  (loop [p (.tree (prefix t))
-         r (.tree (selected t))
-         s (.tree (suffix t))]
+  (loop [p (prefix t)
+         r (selected t)
+         s (suffix t)]
     (if (or (empty? p) (pred (peek p)))
-      (tuple (with-tree (prefix t) p)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) s))
+      (tuple p r s)
       (recur (pop p)
-             (clojure.core/-> r (ft/conjl (peek p)) pop)
-             (ft/conjl (peek r) s)))))
+             (clojure.core/-> r (conj (peek p)) pop)
+             (conj (peek r) s)))))
 
 (defn slide-left
   "Slide the covered region left by `n` items."
@@ -258,14 +235,12 @@ component part value."
   "Slide the covered region right until `pred` has returned logical `true`
 `n` times."
   [t pred n]
-  (loop [p (.tree (prefix t))
-         r (.tree (selected t))
-         s (.tree (suffix t))
+  (loop [p (prefix t)
+         r (selected t)
+         s (suffix t)
          n n]
     (if (or (empty? s) (zero? n))
-      (tuple (with-tree (prefix t) p)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) s))
+      (tuple p r s)
       (recur (conj p (first r))
              (clojure.core/-> r next (conj (peek s)))
              (next s)
@@ -274,13 +249,11 @@ component part value."
 (defn slide-right-while
   "Slide the covered region right while `pred` returns logical `true`."
   [t pred]
-  (loop [p (.tree (prefix t))
-         r (.tree (selected t))
-         s (.tree (suffix t))]
+  (loop [p (prefix t)
+         r (selected t)
+         s (suffix t)]
     (if (or (empty? s) (pred (first s)))
-      (tuple (with-tree (prefix t) p)
-             (with-tree (selected t) r)
-             (with-tree (suffix t) s))
+      (tuple p r s)
       (recur (conj p (first r))
              (clojure.core/-> r next (conj (peek s)))
              (next s)))))

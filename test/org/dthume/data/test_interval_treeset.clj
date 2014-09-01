@@ -253,9 +253,14 @@
 (fact "Treesets can be partitioned around selection regions"
   (it/select-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
-   [3 6])               
-                => [[[1 2]]
+   [3 6])                               => [[[1 2]]
                                             [[3 4] [5 6]]
+                                            [[7 8]]]
+
+  (it/select-overlapping
+   (ts [0 10] [1 2] [3 4] [5 6] [7 8])
+   [3 6])                               => [[[1 2]]
+                                            [[0 10] [3 4] [5 6]]
                                             [[7 8]]])
 
 ;; Each component of a selection region acts as a window, and can be operated
