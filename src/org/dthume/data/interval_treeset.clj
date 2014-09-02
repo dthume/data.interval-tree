@@ -509,7 +509,8 @@ Public so clients who know they have an interval treeset on the `lhs` can
 avoid the dispatch overhead of `difference`."
   [^IntervalTreeSet lhs rhs]
   (if (instance? IntervalTreeSet rhs)
-   (it-difference* lhs rhs)
+;   (it-difference* lhs rhs)
+   (reduce disj lhs rhs)
    (reduce disj lhs rhs)))
 
 (defn- union-result

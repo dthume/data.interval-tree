@@ -86,7 +86,7 @@
   [as-set s cmds]
   (reduce (partial apply-command as-set) s cmds))
 
-(defspec command-set-same-as-clojure-set 100
+(defspec command-set-same-as-clojure-set 200
   (prop/for-all [a    gen-intervals
                  cmds gen-all-commands]
     (let [it  (apply-commands ts (ts a) cmds)
