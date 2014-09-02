@@ -9,7 +9,7 @@ Largely based on the implementation described in the
 
 ## Leiningen
 
-[![Clojars Project](http://clojars.org/org.dthume/data.interval-treeset/latest-version.svg)](http://clojars.org/org.dthume/data.set)
+[![Clojars Project](http://clojars.org/org.dthume/data.interval-treeset/latest-version.svg)](http://clojars.org/org.dthume/data.interval-treeset)
 
 ## API Docs
 
