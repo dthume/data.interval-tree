@@ -65,13 +65,6 @@
     (let [t (ts v)]
       (ascending? t))))
 
-(defspec union-same-as-clojure-set 100
-  (prop/for-all [a gen-intervals
-                 b gen-intervals]
-    (let [it  (it/it-union (ts a) (ts b))
-          is  (clojure.set/union (ss a) (ss b))]
-      (equal-elems? it is))))
-
 (defn- apply-command
   [as-set s [cmd args]]
   (case cmd

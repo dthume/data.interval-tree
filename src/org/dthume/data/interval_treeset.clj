@@ -478,17 +478,23 @@ _know_ that they have two interval treesets can avoid the dispatch overhead
 of `difference`."
   [^IntervalTreeSet lhs ^IntervalTreeSet rhs]
   (let [as-interval (.as-interval lhs)
-        compare-point (.compare-point lhs)]
+        compare-point (.compare-point lhs)
+        comp-v        (point-comparator compare-point)]
     (loop [res (empty (.tree lhs)) a (.tree lhs) b (.tree rhs)]
       (if (or (empty? a) (empty? b))
         (with-tree lhs (ft/ft-concat res a))
         (let [[bf & br] b
               [bfs bfe] (as-interval bf)
-              [l x r] (split-tree-key>= compare-point a bfs)
-              res (ft/ft-concat res l)]
+              [l x r] (split-tree-key-exact>= as-interval comp-v compare-point
+                                              a bf bfs bfe)
+              res (ft/ft-concat res l)
+              [xs xe] (as-interval x)
+              xc      (comp-v bf bfs bfe x xs xe)]
           (cond
            (= x bf)   (recur res r br)
-           (empty? r) (recur (conj res x) r br)
+           (empty? r) (if (pos? xc)
+                        (recur (conj res x) r br)
+                        (recur res (conj r x) br))
            :else
            (if-let [remaining
                     (loop [p (empty r) c r]
@@ -500,8 +506,12 @@ of `difference`."
                                             zero?))
                             (if (= cf bf) (ft/ft-concat p (rest c))
                                 (recur (conj p cf) (next c)))))))]
-             (recur (conj res x) remaining br)
-             (recur (conj res x) r br))))))))
+             (if (pos? xc)
+               (recur (conj res x) remaining br)
+               (recur res (ft/conjl remaining x) br))
+             (if (pos? xc)
+               (recur (conj res x) r br)
+               (recur res (ft/conjl r x) br)))))))))
 
 (defn it-difference
   "Specific difference for an interval treeset with any other set type.
@@ -509,8 +519,7 @@ Public so clients who know they have an interval treeset on the `lhs` can
 avoid the dispatch overhead of `difference`."
   [^IntervalTreeSet lhs rhs]
   (if (instance? IntervalTreeSet rhs)
-;   (it-difference* lhs rhs)
-   (reduce disj lhs rhs)
+   (it-difference* lhs rhs)
    (reduce disj lhs rhs)))
 
 (defn- union-result
