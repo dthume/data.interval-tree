@@ -1,4 +1,4 @@
-(defproject org.dthume/data.interval-treeset "0.1.1-SNAPSHOT"
+(defproject org.dthume/data.interval-treeset "0.1.2-SNAPSHOT"
   :description "Interval Treeset based on finger trees."
   :url "http://github.com/dthume/data.interval-treeset"
   :license "Eclipse Public License 1.0"
