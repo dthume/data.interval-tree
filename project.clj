@@ -11,7 +11,7 @@
   :codox {:defaults {:doc/format :markdown}
           :output-dir "doc/codox"}
 
-  :dependencies [[clj-tuple "0.1.5"]
+  :dependencies [[clj-tuple "0.1.6"]
                  [org.clojure/clojure "1.6.0"]
                  [org.clojure/data.finger-tree "0.0.2"]
                  [org.dthume/data.set "0.1.0"]]
