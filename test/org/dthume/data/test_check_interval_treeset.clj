@@ -25,7 +25,7 @@
   (if (empty? items) empty-set
       (into empty-set items)))
 
-(defn sorted-iv-set
+(defn ss
   [items]
   (into (sorted-set-by iv-compare) items))
 
@@ -39,22 +39,56 @@
   [a b]
   (every? identity (map = a b)))
 
-(defn gen-intervals
-  []
+(def gen-interval
   (->> (gen/tuple gen/int gen/s-pos-int)
-       (gen/fmap (fn [[s l]] [s (+ s l)]))
-       gen/vector
-       gen/not-empty))
+       (gen/fmap (fn [[s l]] [s (+ s l)]))))
+
+(def gen-intervals
+  (->> gen-interval gen/vector gen/not-empty))
+
+(def gen-iv-args-command
+  (->> (gen/tuple (gen/elements [:disj :conj])
+                  gen-intervals)))
+
+(def gen-iv-coll-command
+  (->> (gen/tuple (gen/elements [:union :difference :intersection :into])
+                  gen-intervals)))
+
+(defn gen-commands
+  [& cmds]
+  (->> cmds gen/one-of gen/vector gen/not-empty))
+
+(def gen-all-commands (gen-commands gen-iv-args-command gen-iv-coll-command))
 
 (defspec elements-are-correctly-ordered-after-into 100
-  (prop/for-all [v (gen-intervals)]
+  (prop/for-all [v gen-intervals]
     (let [t (ts v)]
       (ascending? t))))
 
 (defspec union-same-as-clojure-set 100
-  (prop/for-all [a (gen-intervals)
-                 b (gen-intervals)]
+  (prop/for-all [a gen-intervals
+                 b gen-intervals]
     (let [it  (it/it-union (ts a) (ts b))
-          is  (clojure.set/union (sorted-iv-set a) (sorted-iv-set b))]
+          is  (clojure.set/union (ss a) (ss b))]
       (equal-elems? it is))))
 
+(defn- apply-command
+  [as-set s [cmd args]]
+  (case cmd
+    :disj         (apply disj s args)
+    :conj         (apply conj s args)
+    :into         (into s args)
+    :union        (set/union s (as-set args))
+    :intersection (set/intersection s (as-set args))
+    :difference   (set/difference s (as-set args))))
+
+(defn- apply-commands
+  [as-set s cmds]
+  (reduce (partial apply-command as-set) s cmds))
+
+(defspec command-set-same-as-clojure-set 100
+  (prop/for-all [a    gen-intervals
+                 cmds gen-all-commands]
+    (let [it  (apply-commands ts (ts a) cmds)
+          is  (apply-commands ss (ss a) cmds)]
+      (equal-elems? it is))))
