@@ -242,7 +242,7 @@ resulting selection."))
               [ks ke]   ki
               comp-v    (point-comparator compare-point)
               [l x r]   (split-tree-key-exact>= as-interval comp-v compare-point
-                                                tree ki ks ke)]
+                                                tree k ks ke)]
           (if (= x k)
             (with-tree this (ft/ft-concat l r))
             (loop [curr (first r)
@@ -509,8 +509,7 @@ Public so clients who know they have an interval treeset on the `lhs` can
 avoid the dispatch overhead of `difference`."
   [^IntervalTreeSet lhs rhs]
   (if (instance? IntervalTreeSet rhs)
-;   (it-difference* lhs rhs)
-   (reduce disj lhs rhs)
+   (it-difference* lhs rhs)
    (reduce disj lhs rhs)))
 
 (defn- union-result
