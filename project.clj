@@ -26,7 +26,8 @@
    {:source-paths ["src/dev/clj"]
     :dependencies [[midje "1.6.3"]
                    [perforate "0.3.3"]
-                   [org.clojure/test.check "0.5.9"]]}
+                   [org.clojure/test.check "0.5.9"]
+                   [collection-check "0.1.4"]]}
 
    :benchmark
    {:jvm-opts ^:replace

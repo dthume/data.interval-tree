@@ -4,6 +4,8 @@
             (clojure.test.check [clojure-test :refer [defspec]]
                                 [generators :as gen]
                                 [properties :as prop])
+            [collection-check :refer [assert-equivalent-sets
+                                      assert-set-like]]
             [midje.sweet :refer :all]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.interval-treeset.selection :as sel]
@@ -60,11 +62,6 @@
 
 (def gen-all-commands (gen-commands gen-iv-args-command gen-iv-coll-command))
 
-(defspec elements-are-correctly-ordered-after-into 100
-  (prop/for-all [v gen-intervals]
-    (let [t (ts v)]
-      (ascending? t))))
-
 (defn- apply-command
   [as-set s [cmd args]]
   (case cmd
@@ -79,9 +76,17 @@
   [as-set s cmds]
   (reduce (partial apply-command as-set) s cmds))
 
-(defspec command-set-same-as-clojure-set 200
+(defspec elements-are-correctly-ordered-after-into 100
+  (prop/for-all [v gen-intervals]
+    (let [t (ts v)]
+      (ascending? t))))
+
+(defspec command-set-same-as-clojure-set 1000
   (prop/for-all [a    gen-intervals
                  cmds gen-all-commands]
     (let [it  (apply-commands ts (ts a) cmds)
           is  (apply-commands ss (ss a) cmds)]
-      (equal-elems? it is))))
+      (assert-equivalent-sets it is)
+      true)))
+
+

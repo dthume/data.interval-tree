@@ -143,6 +143,9 @@ resulting selection."))
     (meta [_] mdata)
     (withMeta [_ mdata]
       (IntervalTreeSet. as-interval compare-point tree mdata))
+  clojure.lang.IFn
+    (invoke [this k] (get this k))
+    (applyTo [this args] (clojure.lang.AFn/applyToHelper this args))
   Seqable
     (seq [this] (when (seq tree) tree))
   IPersistentCollection
