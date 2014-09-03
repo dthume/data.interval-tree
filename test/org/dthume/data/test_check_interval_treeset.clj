@@ -4,7 +4,8 @@
             (clojure.test.check [clojure-test :refer [defspec]]
                                 [generators :as gen]
                                 [properties :as prop])
-            [collection-check :refer [assert-equivalent-sets]]
+            [collection-check :refer [assert-equivalent-collections
+                                      assert-equivalent-sets]]
             [midje.sweet :refer :all]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.interval-treeset.selection :as sel]
@@ -30,15 +31,34 @@
   [items]
   (into (sorted-set-by iv-compare) items))
 
+(defn assert-equivalent-indexeds
+  [a b]
+  (assert (= (map #(nth a %) (range (count a)))
+             (map #(nth b %) (range (count b)))))
+  true)
+
+(defn assert-equivalent-reversibles
+  [a b]
+  (assert (every? identity (map = (rseq a) (rseq b))))
+  true)
+
+(defn assert-equivalent-stacks
+  [a b]
+  (assert (= (count a) (count b)))
+  (loop [a a b b]
+    (when (seq a)
+      (do
+        (assert (= (peek a) (peek b)))
+        (recur (pop a) (pop b)))))
+  true)
+
 (defn ascending?
   [coll]
   (every? (every-pred (fn [[a b]] (not (pos? (iv-compare a b))))
                       identity)
           (partition 2 1 coll)))
 
-(defn equal-elems?
-  [a b]
-  (every? identity (map = a b)))
+;; Generators
 
 (def gen-interval
   (->> (gen/tuple gen/int gen/s-pos-int)
@@ -47,19 +67,10 @@
 (def gen-intervals
   (->> gen-interval gen/vector gen/not-empty))
 
-(def gen-iv-args-command
-  (->> (gen/tuple (gen/elements [:disj :conj])
-                  gen-intervals)))
-
-(def gen-iv-coll-command
-  (->> (gen/tuple (gen/elements [:union :difference :intersection :into])
-                  gen-intervals)))
-
-(defn gen-commands
-  [& cmds]
-  (->> cmds gen/one-of gen/vector gen/not-empty))
-
-(def gen-all-commands (gen-commands gen-iv-args-command gen-iv-coll-command))
+(def gen-commands
+  (-> (gen/elements [:disj :conj :union :difference :intersection :into])
+      (gen/tuple gen-intervals)
+      gen/vector))
 
 (defn- apply-command
   [as-set s [cmd args]]
@@ -82,10 +93,14 @@
 
 (defspec command-set-same-as-clojure-set 1000
   (prop/for-all [a    gen-intervals
-                 cmds gen-all-commands]
+                 cmds gen-commands]
     (let [it  (apply-commands ts (ts a) cmds)
-          is  (apply-commands ss (ss a) cmds)]
+          is  (apply-commands ss (ss a) cmds)
+          isv (into [] is)]
       (assert-equivalent-sets it is)
+      (assert-equivalent-indexeds it isv)
+      (assert-equivalent-reversibles it isv)
+      (assert-equivalent-stacks it isv)
       true)))
 
 

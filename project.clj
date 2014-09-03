@@ -1,7 +1,11 @@
 (defproject org.dthume/data.interval-treeset "0.1.2-SNAPSHOT"
   :description "Interval Treeset based on finger trees."
   :url "http://github.com/dthume/data.interval-treeset"
-  :license "Eclipse Public License 1.0"
+  :license {:name "Eclipse Public License 1.0"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  
+  :scm {:name "git"
+        :url "github.com/dthume/data.interval-tree"}
 
   :plugins [[codox "0.8.9"]
             [lein-marginalia "0.7.1"]
