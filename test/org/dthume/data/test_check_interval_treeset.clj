@@ -4,8 +4,7 @@
             (clojure.test.check [clojure-test :refer [defspec]]
                                 [generators :as gen]
                                 [properties :as prop])
-            [collection-check :refer [assert-equivalent-sets
-                                      assert-set-like]]
+            [collection-check :refer [assert-equivalent-sets]]
             [midje.sweet :refer :all]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.interval-treeset.selection :as sel]
