@@ -3,7 +3,7 @@
   :url "http://github.com/dthume/data.interval-treeset"
   :license {:name "Eclipse Public License 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  
+
   :scm {:name "git"
         :url "github.com/dthume/data.interval-tree"}
 

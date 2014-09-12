@@ -350,22 +350,21 @@ resulting selection."))
           x
           n-f)))
     (select-overlapping* [this ival]
-      (if (empty? this)
-        (tuple this this this)
-        (let [[ik ip] ival
+      (if (seq this)
+        (let [comp-v  (point-comparator compare-point)
+              [ik ip] ival
               [l x r] (ft/split-tree tree (it-greater compare-point ip))
               [xs xe] (as-interval x)
               [rs rr] (if (pos? (compare-point ip xs))
                         (tuple (conj l x) r)
                         (tuple l (ft/conjl r x)))]
-          (if (empty? rs)
-            (tuple (empty this) (empty this) (with-tree this rr))
+          (if (seq rs)
             (loop [prefix     (empty tree)
                    covered    (empty tree)
                    [l2 x2 r2] (ft/split-tree rs (it-at-least compare-point ik))]
               (let [prefix           (ft/ft-concat prefix l2)
                     [x2s x2e]        (as-interval x2)
-                    [prefix covered] (if (neg? (compare-point ip x2s))
+                    [prefix covered] (if (neg? (compare-point x2e ik))
                                        (tuple (conj prefix x2) covered)
                                        (tuple prefix (conj covered x2)))]
                 (if (empty? r2)
@@ -373,7 +372,9 @@ resulting selection."))
                          (with-tree this covered)
                          (with-tree this rr))
                   (recur prefix covered
-                         (ft/split-tree r2 (it-at-least compare-point ik))))))))))
+                         (ft/split-tree r2 (it-at-least compare-point ik))))))
+            (tuple (empty this) (empty this) (with-tree this rr))))
+        (tuple this this this)))
     (select* [this k]
       (let [ki      (as-interval k)
             [ks ke] ki

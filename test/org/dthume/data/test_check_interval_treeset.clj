@@ -86,7 +86,7 @@
   [as-set s cmds]
   (reduce (partial apply-command as-set) s cmds))
 
-(defspec elements-are-correctly-ordered-after-into 100
+(defspec elements-are-correctly-ordered-after-into 1000
   (prop/for-all [v gen-intervals]
     (let [t (ts v)]
       (ascending? t))))

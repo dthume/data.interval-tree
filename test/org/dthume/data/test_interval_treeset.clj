@@ -252,6 +252,14 @@
 ;; namespace to work with selection regions.
 (fact "Treesets can be partitioned around selection regions"
   (it/select-overlapping
+   (ts [3 4])
+   [9 10])                               => [[[3 4]] [] []]
+
+  (it/select-overlapping
+   (ts [3 4])
+   [1 2])                               => [[] [] [[3 4]]]
+
+  (it/select-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
    [3 6])                               => [[[1 2]]
                                             [[3 4] [5 6]]
