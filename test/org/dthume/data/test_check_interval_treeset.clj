@@ -31,6 +31,27 @@
   [items]
   (into (sorted-set-by iv-compare) items))
 
+(defn- overlapping?
+  [a b]
+  (let [[as ae] a [bs be] b]
+    (and (<= as be) (<= bs ae))))
+
+(defn simple-select-overlapping
+  [s iv]
+  (loop [prefix  (transient [])
+         covered (transient [])
+         suffix  (transient [])
+         items   s]
+    (if (seq items)
+      (let [item (first items)]
+        (cond
+         (overlapping? item iv)      (recur prefix (conj! covered item) suffix (rest items))
+         (neg? (iv-compare item iv)) (recur (conj! prefix item) covered suffix (rest items))
+         :else                       (recur prefix covered (conj! suffix item) (rest items))))
+      [(persistent! prefix)
+       (persistent! covered)
+       (persistent! suffix)])))
+
 (defn assert-equivalent-indexeds
   [a b]
   (assert (= (map #(nth a %) (range (count a)))
@@ -102,5 +123,12 @@
       (assert-equivalent-reversibles it isv)
       (assert-equivalent-stacks it isv)
       true)))
+
+(defspec select-overlapping-same-as-linear-scan 1000
+  (prop/for-all [a    gen-intervals
+                 sel  gen-interval]
+    (let [it  (it/select-overlapping (ts a) sel)
+          is  (simple-select-overlapping (ss a) sel)]
+      (= it is))))
 
 

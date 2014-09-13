@@ -355,9 +355,9 @@ resulting selection."))
               [ik ip] ival
               [l x r] (ft/split-tree tree (it-greater compare-point ip))
               [xs xe] (as-interval x)
-              [rs rr] (if (pos? (compare-point ip xs))
-                        (tuple (conj l x) r)
-                        (tuple l (ft/conjl r x)))]
+              [rs rr] (if (neg? (compare-point ip xs))
+                        (tuple l (ft/conjl r x))
+                        (tuple (conj l x) r))]
           (if (seq rs)
             (loop [prefix     (empty tree)
                    covered    (empty tree)

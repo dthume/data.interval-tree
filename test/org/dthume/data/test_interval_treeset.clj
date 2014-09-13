@@ -250,7 +250,7 @@
 ;; see below for examples of using the
 ;; [`org.dthume.data.interval-tree.selection`](../codox/org.dthume.data.interval-treeset.selection.html)
 ;; namespace to work with selection regions.
-(fact "Treesets can be partitioned around selection regions"
+(fact "Treesets can be partitioned around selection regions" :temp
   (it/select-overlapping
    (ts [3 4])
    [9 10])                               => [[[3 4]] [] []]
@@ -258,6 +258,14 @@
   (it/select-overlapping
    (ts [3 4])
    [1 2])                               => [[] [] [[3 4]]]
+
+  (it/select-overlapping
+   (ts [3 4] [3 5])
+   [0 3])                               => [[] [[3 5] [3 4]] []]
+
+  (it/select-overlapping
+   (ts [0 1])
+   [-2 0])                               => [[] [[0 1]] []]
 
   (it/select-overlapping
    (ts [1 2] [3 4] [5 6] [7 8])
