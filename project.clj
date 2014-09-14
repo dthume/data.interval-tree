@@ -18,7 +18,7 @@
   :dependencies [[clj-tuple "0.1.6"]
                  [org.clojure/clojure "1.6.0"]
                  [org.clojure/data.finger-tree "0.0.2"]
-                 [org.dthume/data.set "0.1.0"]]
+                 [org.dthume/data.set "0.1.1"]]
 
   :javac-options ["-target" "1.6" "-source" "1.6"]
 
