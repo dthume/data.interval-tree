@@ -1,6 +1,6 @@
 (defproject org.dthume/data.interval-treeset "0.1.2"
   :description "Interval Treeset based on finger trees."
-  :url "http://github.com/dthume/data.interval-treeset"
+  :url "http://github.com/dthume/data.interval-tree"
   :license {:name "Eclipse Public License 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
