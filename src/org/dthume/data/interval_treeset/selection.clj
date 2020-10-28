@@ -1,8 +1,7 @@
 (ns ^{:doc "Interval treeset subset selection."}
   org.dthume.data.interval-treeset.selection
   (:refer-clojure :exclude [-> ->> as->])
-  (:require [clj-tuple :refer (tuple)]
-            [clojure.core.reducers :as r]
+  (:require [clojure.core.reducers :as r]
             [clojure.data.finger-tree :as ft]
             [org.dthume.data.interval-treeset :as it]
             [org.dthume.data.set :as set])
@@ -11,7 +10,7 @@
 (defn selection
   "Create a selection from 3 trees: `pre`fix `sel`ected and `suff`ix."
   [pre sel suff]
-  (tuple pre sel suff))
+  [pre sel suff])
 
 (defn selected
   "Lensing function for the selected component part of a region.
@@ -113,7 +112,7 @@ component part value."
     (if (and (some? rs) (pos? n))
       (let [r (first rs)]
         (recur (conj p r) (next rs) (if (pred r) (dec n) n)))
-      (tuple p rs (suffix t)))))
+      [p rs (suffix t)])))
 
 (defn contractl-while
   "Contract the covered region to the left while `pred` returns logical `true`."
@@ -121,7 +120,7 @@ component part value."
   (loop [p (prefix t) rs (selected t)]
     (if (and (some? rs) (pred (first rs)))
       (recur (conj p (first rs)) (next rs))
-      (tuple p rs (suffix t)))))
+      [p rs (suffix t)])))
 
 (defn contractl
   "Contract the covered region to the left by `n` items."
@@ -134,7 +133,7 @@ component part value."
   [t pred n]
   (loop [p (prefix t) r (selected t) n n]
     (if (or (empty? p) (zero? n))
-      (tuple p r (suffix t))
+      [p r (suffix t)]
       (recur (pop p) (conj r (peek p))
              (if (pred (peek p)) (dec n) n)))))
 
@@ -143,7 +142,7 @@ component part value."
   [t pred]
   (loop [p (prefix t) r (selected t)]
     (if (or (empty? p) (pred (peek p)))
-      (tuple p r (suffix t))
+      [p r (suffix t)]
       (recur (pop p) (conj r (peek p))))))
 
 (defn expandl
@@ -157,7 +156,7 @@ component part value."
   [t pred n]
   (loop [r (selected t) s (suffix t) n n]
     (if (or (empty? r) (zero? n))
-      (tuple (prefix t) r s)
+      [(prefix t) r s]
       (recur (pop r) (conj s (peek r))
              (if (pred (peek r)) (dec n) n)))))
 
@@ -166,7 +165,7 @@ component part value."
   [t pred]
   (loop [r (selected t) s (selected t)]
     (if (or (empty? r) (pred (peek r)))
-      (tuple (prefix t) r s)
+      [(prefix t) r s]
       (recur (pop r) (conj s (peek r))))))
 
 (defn contractr
@@ -183,7 +182,7 @@ component part value."
       (let [s (first ss)]
         (recur (conj r s) (next ss)
                (if (pred s) (dec n) n)))
-      (tuple (prefix t) r ss))))
+      [(prefix t) r ss])))
 
 (defn expandr-while
   "Expand the covered region to the right while `pred` evaluates to logical
@@ -191,7 +190,7 @@ component part value."
   [t pred]
   (loop [r (selected t) ss (suffix t)]
     (if (or (empty? ss) (not (pred (first ss))))
-      (tuple (prefix t) r ss)
+      [(prefix t) r ss]
       (recur (conj r (first ss)) (next ss)))))
 
 (defn expandr
@@ -208,7 +207,7 @@ component part value."
          s (suffix t)
          n n]
     (if (or (empty? p) (zero? n))
-      (tuple p r s)
+      [p r s]
       (recur (pop p)
              (clojure.core/-> r (conj (peek p)) pop)
              (conj (peek r) s)
@@ -221,7 +220,7 @@ component part value."
          r (selected t)
          s (suffix t)]
     (if (or (empty? p) (pred (peek p)))
-      (tuple p r s)
+      [p r s]
       (recur (pop p)
              (clojure.core/-> r (conj (peek p)) pop)
              (conj (peek r) s)))))
@@ -240,7 +239,7 @@ component part value."
          s (suffix t)
          n n]
     (if (or (empty? s) (zero? n))
-      (tuple p r s)
+      [p r s]
       (recur (conj p (first r))
              (clojure.core/-> r next (conj (peek s)))
              (next s)
@@ -253,7 +252,7 @@ component part value."
          r (selected t)
          s (suffix t)]
     (if (or (empty? s) (pred (first s)))
-      (tuple p r s)
+      [p r s]
       (recur (conj p (first r))
              (clojure.core/-> r next (conj (peek s)))
              (next s)))))

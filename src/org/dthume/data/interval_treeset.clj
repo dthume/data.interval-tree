@@ -6,8 +6,7 @@ Based largely on the original
 Provides an efficient, persistent representation of a set of items sorted by
 the interval which they occupy."}
   org.dthume.data.interval-treeset
-  (:require [clj-tuple :refer (tuple)]
-            (clojure.core [protocols :as core-protocols]
+  (:require (clojure.core [protocols :as core-protocols]
                           [reducers :as r])
             [clojure.data.finger-tree :as ft]
             [clojure.pprint]
@@ -45,7 +44,7 @@ the interval which they occupy."}
 (defn interval
   "Create an interval with range `s` to `e`"
   [s e]
-  (tuple s e))
+  [s e])
 
 (definline ^:private m-length
   [^IntervalMeasure i]
@@ -122,8 +121,8 @@ resulting selection."))
                 rc      (comp-v k ks ke rf rs re)]
             (if (pos? rc)
               (recur (conj l rf) (rest r))
-              (tuple l rf (rest r))))
-          (tuple (pop l) (peek l) (empty tree))))
+              [l rf (rest r)]))
+          [(pop l) (peek l) (empty tree)]))
       sp)))
 
 (deftype IntervalTreeSet [as-interval compare-point tree mdata]
@@ -202,17 +201,17 @@ resulting selection."))
     (ft-split-at [this n notfound]
       (cond
        (< n 0)
-       (tuple (empty this) notfound this)
+       [(empty this) notfound this]
        
        (< n (count this))
        (let [[l x r] (ft/split-tree tree #(> (m-length ^IntervalMeasure %)
                                              n))]
-         (tuple (with-tree this l)
+         [(with-tree this l)
                 x
-                (with-tree this r)))
+                (with-tree this r)])
        
        :else
-       (tuple this notfound (empty this))))
+       [this notfound (empty this)]))
     (ft-split-at [this n]
       (ft/ft-split-at this n nil))
   Counted
@@ -339,7 +338,7 @@ resulting selection."))
         (let [start                (-> this first interval-start)
               ^IntervalMeasure em  (-> this ft/measured)
               end                  (m-end em)]
-          (tuple start end))))
+          [start end])))
     (first-overlapping* [this ival]
       (first-overlapping* this ival nil))
     (first-overlapping* [this ival n-f]
@@ -356,8 +355,8 @@ resulting selection."))
               [l x r] (ft/split-tree tree (it-greater compare-point ip))
               [xs xe] (as-interval x)
               [rs rr] (if (neg? (compare-point ip xs))
-                        (tuple l (ft/conjl r x))
-                        (tuple (conj l x) r))]
+                        [l (ft/conjl r x)]
+                        [(conj l x) r])]
           (if (seq rs)
             (loop [prefix     (empty tree)
                    covered    (empty tree)
@@ -365,16 +364,16 @@ resulting selection."))
               (let [prefix           (ft/ft-concat prefix l2)
                     [x2s x2e]        (as-interval x2)
                     [prefix covered] (if (neg? (compare-point x2e ik))
-                                       (tuple (conj prefix x2) covered)
-                                       (tuple prefix (conj covered x2)))]
+                                       [(conj prefix x2) covered]
+                                       [prefix (conj covered x2)])]
                 (if (empty? r2)
-                  (tuple (with-tree this prefix)
-                         (with-tree this covered)
-                         (with-tree this rr))
+                  [(with-tree this prefix)
+                   (with-tree this covered)
+                   (with-tree this rr)]
                   (recur prefix covered
                          (ft/split-tree r2 (it-at-least compare-point ik))))))
-            (tuple (empty this) (empty this) (with-tree this rr))))
-        (tuple this this this)))
+            [(empty this) (empty this) (with-tree this rr)]))
+        [this this this]))
     (select* [this k]
       (let [ki      (as-interval k)
             [ks ke] ki
@@ -383,18 +382,18 @@ resulting selection."))
                               (compare-point ks x)
                               (zero? x))]
         (if (empty? tree)
-          (tuple this this this)
+          [this this this]
           (let [t (split-tree-key>= compare-point tree ks)
                 [l x r]
                 (loop [l (nth t 0) x (nth t 1) r (nth t 2)]
                   (cond
-                   (= x k)         (tuple l (conj (empty this) x) r)
-                   (empty? r)      (tuple (conj l x) (empty tree) (empty tree))
-                   (start-not= x)  (tuple l (empty tree) (ft/conjl r x))             
+                   (= x k)         [l (conj (empty this) x) r]
+                   (empty? r)      [(conj l x) (empty tree) (empty tree)]
+                   (start-not= x)  [l (empty tree) (ft/conjl r x)]
                    :else           (recur (conj l x) (first r) (next r))))]
-            (tuple (with-tree this l)
-                   (with-tree this x)
-                   (with-tree this r)))))))
+            [(with-tree this l)
+             (with-tree this x)
+             (with-tree this r)])))))
 
 (no-codox! #'->IntervalTreeSet)
 
@@ -431,7 +430,7 @@ resulting selection."))
 (defn partition-around
   [it k]
   (case (count it)
-    0 (tuple (empty it) (empty it) (empty it))
+    0 [(empty it) (empty it) (empty it)]
     1 ))
 
 (defn it-intersection*
@@ -445,7 +444,7 @@ of `intersection`."
         (if (identical? lhs (max-key #(or (some-> % first interval-start)
                                           Integer/MIN_VALUE)
                                      lhs rhs))
-          (tuple lhs rhs) (tuple rhs lhs))]
+          [lhs rhs] [rhs lhs])]
     (loop [res (empty (.tree a)) a (.tree a) b (.tree b)]
       (if (or (empty? a) (empty? b))
         (with-tree lhs res)
@@ -577,14 +576,14 @@ of `union`."
                      (let [bf (first br) rf (first r)]
                        (if (= bf rf)
                          (recur (conj res bf) (rest br) (rest r))
-                         (tuple res br r)))
-                     (tuple res br r)))]
+                         [res br r]))
+                     [res br r]))]
              (recur res br r))
            (let [[xs xe]   (as-interval x)
                  [l r]     (if (pos? (comp-v bf bfs bfe x xs xe))
-                             (tuple (conj l x) r)
-                             (tuple l (ft/conjl r x)))
-                 new-res (conj (ft/ft-concat res l) bf)] 
+                             [(conj l x) r]
+                             [l (ft/conjl r x)])
+                 new-res (conj (ft/ft-concat res l) bf)]
              (recur new-res br r))))))))
 
 (defn it-union

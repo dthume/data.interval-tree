@@ -1,5 +1,15 @@
 # Interval Treeset
 
+This is a fork of [dthume's
+data.interval-tree](https://github.com/dthume/data.interval-tree), purely to
+support newer versions of Clojure. It looks like David might be AFK for a bit;
+hopefully he'll come back and this can go away!
+
+I've changed the project name (for Clojars), but left the namespaces under
+org.dthume; it should be a drop-in replacement for the original.
+
+## About
+
 Interval Treeset built on [data.finger-tree](https://github.com/clojure/data.finger-tree).
 
 Largely based on the implementation described in the

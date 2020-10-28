@@ -1,23 +1,22 @@
-(defproject org.dthume/data.interval-treeset "0.1.3-SNAPSHOT"
+(defproject com.aphyr/data.interval-treeset "0.1.3"
   :description "Interval Treeset based on finger trees."
-  :url "http://github.com/dthume/data.interval-tree"
+  :url "http://github.com/aphyr/data.interval-tree"
   :license {:name "Eclipse Public License 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :scm {:name "git"
-        :url "github.com/dthume/data.interval-tree"}
+        :url "github.com/aphyr/data.interval-tree"}
 
   :plugins [[codox "0.8.9"]
             [lein-marginalia "0.7.1"]
-            [lein-midje "3.0.0"]
-            [perforate "0.3.3"]]
+            [lein-midje "3.2.1"]
+            [perforate "0.3.4"]]
 
   :codox {:defaults {:doc/format :markdown}
           :output-dir "doc/codox"}
 
-  :dependencies [[clj-tuple "0.1.6"]
-                 [org.clojure/clojure "1.6.0"]
-                 [org.clojure/data.finger-tree "0.0.2"]
+  :dependencies [[org.clojure/clojure "1.10.1"]
+                 [org.clojure/data.finger-tree "0.0.3"]
                  [org.dthume/data.set "0.1.1"]]
 
   :javac-options ["-target" "1.6" "-source" "1.6"]
@@ -28,10 +27,10 @@
   :profiles
   {:dev
    {:source-paths ["src/dev/clj"]
-    :dependencies [[midje "1.6.3"]
-                   [perforate "0.3.3"]
-                   [org.clojure/test.check "0.5.9"]
-                   [collection-check "0.1.4"]]}
+    :dependencies [[midje "1.9.9"]
+                   [perforate "0.3.4"]
+                   [org.clojure/test.check "1.1.0"]
+                   [collection-check "0.1.6"]]}
 
    :benchmark
    {:jvm-opts ^:replace
@@ -44,7 +43,7 @@
   {"ci-build"
    ^{:doc "Perform the Continuous Integration build"}
    ["do" ["clean"] ["check"] ["midje"]]
-   
+
    "dev-bench"
    ^{:doc "Run development benchmarks"}
    ["with-profile" "benchmark" "perforate"]
@@ -68,4 +67,4 @@
       "--name" "data.interval-treeset Walkthrough"
       "--desc" "An introduction to data.interval-treeset"
       "--file" "walkthrough.html"
-      "test/org/dthume/data/test_interval_treeset.clj"]]]})
+      "test/com/aphyr/data/test_interval_treeset.clj"]]]})
